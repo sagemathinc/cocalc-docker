@@ -168,8 +168,7 @@ Pkg.add("IJulia");' | julia \
 
  #Install octave_kernel
  RUN \
-      pip install octave_kernel && \
-      python -m octave_kernel install
+      pip install octave_kernel
 
       
 ### Configuration

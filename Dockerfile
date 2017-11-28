@@ -160,7 +160,17 @@ Pkg.init(); \
 Pkg.add("IJulia");' | julia \
  && mv -i "$HOME/.local/share/jupyter/kernels/julia-0.6" "/usr/local/share/jupyter/kernels/"
 
+ #Install Octave and gnuplot
+ RUN \
+      apt-get install -y \
+        octave \
+        gnuplot
 
+ #Install octave_kernel
+ RUN \
+      pip install octave_kernel
+
+      
 ### Configuration
 
 COPY login.defs /etc/login.defs
@@ -173,4 +183,3 @@ COPY bashrc /root/.bashrc
 CMD /root/run.py
 
 EXPOSE 80 443
-

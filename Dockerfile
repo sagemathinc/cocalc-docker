@@ -172,6 +172,19 @@ Pkg.init(); \
 Pkg.add("IJulia");' | julia \
  && mv -i "$HOME/.local/share/jupyter/kernels/julia-0.6" "/usr/local/share/jupyter/kernels/"
 
+###
+
+# Install a script to obtain a ssl certificate from letsencrypt
+
+RUN apt-get update && apt-get install -y curl
+
+COPY letsencrypt-cert.sh /usr/local/sbin/letsencrypt-cert
+
+RUN cd "/usr/local/sbin" \
+ && wget "https://github.com/lukas2511/dehydrated/raw/0be0ab083f290afbc757b8388a80df458ddfd33c/dehydrated" \
+ && echo f1d5ad195669afd315b68af5d6099bdf36a8532bdc0b4a997b1e7139424d7a56 dehydrated | sha256sum -c \
+ && chmod +x "/usr/local/sbin/dehydrated" \
+ && chmod +x "/usr/local/sbin/letsencrypt-cert"
 
 ### Configuration
 

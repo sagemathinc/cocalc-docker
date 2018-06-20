@@ -127,6 +127,34 @@ Once done, you can delete and recreate your CoCalc container.  This will not del
 
 Now visit https://localhost to see your upgraded server.
 
+## Obtain a letsencrypt certificate
+
+The docker image has a script to ease configuration of letsencrypt
+certificates, but it is not automated. Once you have a running
+container:
+
+ * you setup a letsencrypt account by doing (only once)
+```
+docker exec cocalc letsencrypt-cert setup [--test] <DOMAIN> <EMAIL>
+```
+The --test flag configures the account to use the staging letsencrypt
+server which produces certificates signed by fake authority, but otoh
+it doesn't have the small rate limit of the production letsencrypt.
+
+ * you install or renew your certificate (has to be done periodically)
+```
+docker exec cocalc letsencrypt-cert renew
+```
+
+The last step could be automated.
+
+In practice, certificates last for 90 days and if you gave a proper email address you will receive a reminder when the certificate is close to expire.
+
+As it is configured, the last step won't do anything unless your certificate is less than 30 days from expiration, so it is safe to run that once or twice a day. You can use the host cron to repeat it -- the docker container doesn't run cron itself.
+
+In order for this to work, you have to have port 80 exposed and
+accessible directly through `<DOMAIN>`
+
 
 ## Build
 

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import os, tempfile, time, shutil, subprocess, sys
+import os, tempfile, time, subprocess, sys
 
 # Where the PostgreSQL data is stored
 PGDATA = '/projects/postgres/data'

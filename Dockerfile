@@ -120,12 +120,11 @@ RUN    adduser --quiet --shell /bin/bash --gecos "Sage user,101,," --disabled-pa
     && chown -R sage:sage /home/sage/
 
 # make source checkout target, then run the install script
-# see https://github.com/docker/docker/issues/9547 for the sync
 RUN    mkdir -p /usr/local/ \
     && /tmp/scripts/install_sage.sh /usr/local/ master \
     && sync
 
-RUN /tmp/scripts/post_install_sage.sh && rm -rf /tmp/* && sync
+RUN /tmp/scripts/post_install_sage.sh
 
 # Install sage scripts system-wide
 RUN echo "install_scripts('/usr/local/bin/')" | sage
@@ -194,6 +193,10 @@ RUN \
 
 # Install code into Sage
 RUN cd /cocalc/src && sage -pip install --upgrade smc_sagews/
+
+# Update code with environment variables
+# see https://github.com/docker/docker/issues/9547 for the sync
+RUN /tmp/scripts/update_env.sh && rm -rf /tmp/* && sync
 
 RUN echo "umask 077" >> /etc/bash.bashrc
 

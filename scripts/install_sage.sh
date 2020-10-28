@@ -25,13 +25,16 @@ export MAKE="make -j${N_CORES}"
 cd "$SAGE_SRC_TARGET"
 git clone --depth 1 --branch ${BRANCH} https://github.com/sagemath/sage.git
 cd sage
+# Before make we should run ./configure 
+./configure
 
+#Instead of make we use ${MAKE}
 # This may fail: https://trac.sagemath.org/ticket/23519
-make || true
+${MAKE} || true
 # Because of "stupid" static GMP's get left around that break the build.
 # So we try again with the static GMP's removed.
 rm "$SAGE_SRC_TARGET"/sage/local/lib/libgmp*.a
-make
+${MAKE}
 
 # Clean up artifacts from the sage build that we don't need for runtime or
 # running the tests
@@ -40,8 +43,8 @@ make
 # exactly
 
 cd "$SAGE_SRC_TARGET"/sage/
-make misc-clean
-make -C src/ clean
+${MAKE} misc-clean
+${MAKE} -C src/ clean
 
 rm -rf upstream/
 rm -rf src/doc/output/doctrees/

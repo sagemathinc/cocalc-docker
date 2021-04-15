@@ -70,7 +70,8 @@ RUN \
        libpq5 \
        libpq-dev \
        build-essential \
-       automake
+       automake \
+       jq
 
 RUN \
    apt-get update \

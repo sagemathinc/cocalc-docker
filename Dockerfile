@@ -52,7 +52,8 @@ RUN \
        haproxy \
        nginx \
        rsync \
-       tidy
+       tidy \
+       jq
 
  RUN \
      apt-get update \

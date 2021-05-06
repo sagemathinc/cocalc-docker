@@ -263,6 +263,9 @@ RUN rm -rf /usr/share/jupyter/kernels/python3
 # Fix pythontex for our use
 RUN ln -sf /usr/bin/pythontex /usr/bin/pythontex3
 
+# Fix yapf for our use
+RUN ln -sf /usr/bin/yapf3 /usr/bin/yapf
+
 # Other pip3 packages
 # NOTE: Upgrading zmq is very important, or the Ubuntu version breaks everything..
 RUN \

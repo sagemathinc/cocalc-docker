@@ -207,7 +207,11 @@ RUN sage -pip install --upgrade /cocalc/src/smc_sagews/
 RUN rm -rf /cocalc
 
 # NPM install the main cocalc packages globally
-RUN NODE_OPTIONS=--max-old-space-size=8000 npm install -g smc-project smc-hub @cocalc/static @cocalc/cdn webapp-lib --legacy-peer-deps
+RUN npm install -g smc-project  --legacy-peer-deps
+RUN npm install -g smc-hub --legacy-peer-deps
+RUN npm install -g @cocalc/static --legacy-peer-deps
+RUN npm install -g @cocalc/cdn --legacy-peer-deps
+RUN npm install -g webapp-lib --legacy-peer-deps
 
 RUN echo "umask 077" >> /etc/bash.bashrc
 

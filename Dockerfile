@@ -191,21 +191,23 @@ RUN echo "install.packages(c('repr', 'IRdisplay', 'evaluate', 'crayon', 'pbdZMQ'
 # Commit to checkout and build.
 ARG commit=HEAD
 
-# Pull latest source code for CoCalc and checkout requested commit (or HEAD)
+# Pull latest source code for CoCalc and checkout requested commit (or HEAD),
+# install our Python libraries globally, then remove cocalc.  We only need it
+# for installing these Python libraries (TODO: move to pypi?).
 RUN \
-     git clone https://github.com/sagemathinc/cocalc.git \
+     git clone --depth=1 https://github.com/sagemathinc/cocalc.git \
   && cd /cocalc && git pull && git fetch origin && git checkout ${commit:-HEAD}
 
-# Build and install all deps
-RUN \
-     cd /cocalc/src \
-  && . ./smc-env \
-  && ./install.py all --web \
-  && ./install.py all --compute \
-  && rm -rf /root/.npm /root/.node-gyp/
+RUN pip3 install --upgrade /cocalc/src/smc_pyutil/
 
 # Install code into Sage
-RUN cd /cocalc/src && sage -pip install --upgrade smc_sagews/
+RUN sage -pip install --upgrade /cocalc/src/smc_sagews/
+
+# We are now done with our cocalc source code
+RUN rm -rf /cocalc
+
+# NPM install the main cocalc packages globally
+RUN NODE_OPTIONS=--max-old-space-size=8000 npm install -g smc-project smc-hub @cocalc/static @cocalc/cdn webapp-lib --legacy-peer-deps
 
 RUN echo "umask 077" >> /etc/bash.bashrc
 

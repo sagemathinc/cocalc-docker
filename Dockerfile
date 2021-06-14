@@ -212,6 +212,7 @@ RUN npm install -g smc-hub --legacy-peer-deps
 RUN npm install -g @cocalc/static --legacy-peer-deps
 RUN npm install -g @cocalc/cdn --legacy-peer-deps
 RUN npm install -g webapp-lib --legacy-peer-deps
+RUN npm install -g smc-webapp --legacy-peer-deps
 
 RUN echo "umask 077" >> /etc/bash.bashrc
 
@@ -276,7 +277,9 @@ RUN \
 
 # We stick with PostgreSQL 10 for now, to avoid any issues with users having to
 # update to an incompatible version 12.  We don't use postgresql-12 features *yet*,
-# and won't upgrade until we need to.
+# and won't upgrade until we need to or it becomes a security liability.  Note that
+# PostgreSQL 10 is officially supported until November 10, 2022 according to
+# https://www.postgresql.org/support/versioning/
 RUN \
      sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list' \
   && wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add - \

@@ -15,11 +15,6 @@ if [ -x /usr/bin/dircolors ]; then
 fi
 
 
-U="`pwd`"
-cd /cocalc/src
-. smc-env
-cd "$U"
-
 export PGHOST=/projects/postgres/data/socket
 export PGUSER=smc
 export PGDATABASE=smc

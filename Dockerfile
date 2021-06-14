@@ -50,7 +50,6 @@ RUN \
        sudo \
        psmisc \
        haproxy \
-       nginx \
        rsync \
        tidy
 
@@ -238,8 +237,7 @@ RUN echo "en_US.UTF-8 UTF-8" > /etc/locale.gen && locale-gen
 
 COPY login.defs /etc/login.defs
 COPY login /etc/defaults/login
-COPY nginx.conf /etc/nginx/sites-available/default
-COPY haproxy.conf /etc/haproxy/haproxy.cfg
+COPY haproxy.cfg /etc/haproxy/haproxy.cfg
 COPY run.py /root/run.py
 COPY bashrc /root/.bashrc
 

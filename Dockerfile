@@ -194,16 +194,16 @@ ARG commit=HEAD
 # install our Python libraries globally, then remove cocalc.  We only need it
 # for installing these Python libraries (TODO: move to pypi?).
 RUN \
-     git clone --depth=1 https://github.com/sagemathinc/cocalc.git \
+     umask 022 && git clone --depth=1 https://github.com/sagemathinc/cocalc.git \
   && cd /cocalc && git pull && git fetch origin && git checkout ${commit:-HEAD}
 
-RUN pip3 install --upgrade /cocalc/src/smc_pyutil/
+RUN umask 022 && pip3 install --upgrade /cocalc/src/smc_pyutil/
 
 # Install code into Sage
-RUN sage -pip install --upgrade /cocalc/src/smc_sagews/
+RUN umask 022 && sage -pip install --upgrade /cocalc/src/smc_sagews/
 
-# We are now done with our cocalc source code
-RUN rm -rf /cocalc
+# NOTE: WE do not delete the /cocalc source code, since it's still used a little
+# bit, e.g., in the compute server which refers to "SALVUS_ROOT/scripts/...".
 
 # NPM install the main cocalc packages globally
 RUN npm install -g smc-project  --legacy-peer-deps

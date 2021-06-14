@@ -56,6 +56,12 @@ def run(v, shell=False, path='.', get_output=False, env=None, verbose=1):
             os.chdir(cur)
 
 
+def kill(c):
+    try:
+        run("pkill -f %s"%c)
+    except:
+        pass
+
 def self_signed_cert(target='nopassphrase.pem'):
     log("self_signed_cert")
     if os.path.exists('/projects/conf/nopassphrase.pem'):
@@ -109,6 +115,7 @@ def root_ssh_keys():
 
 def start_hub():
     log("start_hub")
+    kill("cocalc-hub-server")
     run("NODE_OPTIONS=--enable-source-maps cocalc-hub-server start \
             --host=localhost \
             --port 5000 \
@@ -118,7 +125,8 @@ def start_hub():
             --update \
             --single \
             --foreground \
-            > /var/log/hub.log 2>/var/log/hub.err &", path="/usr/lib/node_modules/smc-hub")
+            > /var/log/hub.log 2>/var/log/hub.err &",
+        path="/usr/lib/node_modules/smc-hub")
 
 
 def postgres_perms():
@@ -177,12 +185,14 @@ def start_compute():
     # We always delete compute.sqlite3 (resetting it) since obviously all projects are stopped on container startup.
     run("mkdir -p /projects/conf && chmod og-rwx -R /projects/conf && rm -f /projects/conf/compute.sqlite3"
         )
-    run(". smc-env; compute --host=localhost --single start 1>/var/log/compute.log 2>/var/log/compute.err &",
-        path='/cocalc/src')
+    kill("cocalc-compute-server")
+    run("SALVUS_ROOT='/cocalc/src' NODE_OPTIONS=--enable-source-maps cocalc-compute-server --host=localhost --single start 1>/var/log/compute.log 2>/var/log/compute.err &"
+        )
     # Sleep to wait for compute server to start and write port/secret *AND* initialize the schema.
     # TODO: should really do this right -- since if the compute-client tries to initialize schema at same, time things get hosed.
-    run("""sleep 15; . smc-env; echo "require('ts-node').register(); require('smc-hub/compute-client').compute_server(cb:(e,s)-> s._add_server_single(cb:->process.exit(0)))" | coffee & """,
-        path='/cocalc/src')
+    run(
+        """sleep 15; echo "require('smc-hub/compute-client').compute_server({cb:(e,s)=> s._add_server_single({cb:()=>process.exit(0)})})" | node & """,
+        path="/usr/lib/node_modules")
 
 
 def tail_logs():

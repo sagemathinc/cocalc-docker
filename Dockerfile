@@ -49,7 +49,6 @@ RUN \
        g++ \
        sudo \
        psmisc \
-       haproxy \
        rsync \
        tidy
 
@@ -202,16 +201,8 @@ RUN umask 022 && pip3 install --upgrade /cocalc/src/smc_pyutil/
 # Install code into Sage
 RUN umask 022 && sage -pip install --upgrade /cocalc/src/smc_sagews/
 
-# NOTE: WE do not delete the /cocalc source code, since it's still used a little
-# bit, e.g., in the compute server which refers to "SALVUS_ROOT/scripts/...".
-
-# NPM install the main cocalc packages globally
-RUN npm install -g smc-project  --legacy-peer-deps
-RUN npm install -g smc-hub --legacy-peer-deps
-RUN npm install -g @cocalc/static --legacy-peer-deps
-RUN npm install -g @cocalc/cdn --legacy-peer-deps
-RUN npm install -g webapp-lib --legacy-peer-deps
-RUN npm install -g smc-webapp --legacy-peer-deps
+# Build cocalc itself
+RUN umask 022 && cd /cocalc/src && npm run make
 
 RUN echo "umask 077" >> /etc/bash.bashrc
 
@@ -232,12 +223,10 @@ RUN echo "en_US.UTF-8 UTF-8" > /etc/locale.gen && locale-gen
 #Pkg.add("IJulia");' | julia \
 # && mv -i "$HOME/.local/share/jupyter/kernels/julia-0.6" "/usr/local/share/jupyter/kernels/"
 
-
 ### Configuration
 
 COPY login.defs /etc/login.defs
 COPY login /etc/defaults/login
-COPY haproxy.cfg /etc/haproxy/haproxy.cfg
 COPY run.py /root/run.py
 COPY bashrc /root/.bashrc
 

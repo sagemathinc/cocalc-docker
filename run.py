@@ -58,30 +58,28 @@ def run(v, shell=False, path='.', get_output=False, env=None, verbose=1):
 
 def kill(c):
     try:
-        run("pkill -f %s"%c)
+        run("pkill -f %s" % c)
     except:
         pass
 
-def self_signed_cert(target='nopassphrase.pem'):
+
+def self_signed_cert():
     log("self_signed_cert")
-    if os.path.exists('/projects/conf/nopassphrase.pem'):
-        log("installing cert at '/projects/conf/nopassphrase.pem'")
-        run("cp /projects/conf/nopassphrase.pem {target} && chmod og-rwx {target}"
-            .format(target=target))
+    target = '/projects/conf/cert'
+    if not os.path.exists(target):
+        os.makedirs(target)
+    key = os.path.join(target, 'key.pem')
+    cert = os.path.join(target, 'cert.pem')
+    if os.path.exists(key) and os.path.exists(cert):
+        log("ssl key and cert exist, so doing nothing further")
         return
-    log("create self_signed_cert")
-    with tempfile.TemporaryDirectory() as tmp:
-        run([
-            'openssl', 'req', '-new', '-x509', '-nodes', '-out', 'server.crt',
-            '-keyout', 'server.key', '-subj',
-            '/C=US/ST=WA/L=WA/O=Network/OU=IT Department/CN=sagemath'
-        ],
-            path=tmp)
-        s = open(join(tmp, 'server.crt')).read() + open(join(
-            tmp, 'server.key')).read()
-        open(target, 'w').write(s)
-        run("chmod og-rwx {target} && mkdir -p /projects/conf && cp {target} /projects/conf/nopassphrase.pem"
-            .format(target=target))
+    log(f"create self_signed key={key} and cert={cert}")
+    run([
+        'openssl', 'req', '-new', '-x509', '-nodes', '-out', cert, '-keyout',
+        key, '-subj', '/C=US/ST=WA/L=WA/O=Network/OU=IT Department/CN=cocalc'
+    ],
+        path=target)
+    run("chmod og-rwx /projects/conf")
 
 
 def init_projects_path():
@@ -99,11 +97,10 @@ def init_projects_path():
             run("chmod og-rwx '%s'" % full_path)
 
 
-def start_services():
-    log("start_services")
-    for name in ['haproxy', 'nginx', 'ssh']:
-        log("starting ", name)
-        run(['service', name, 'start'])
+def start_ssh():
+    log("start_ssh")
+    log("starting ssh")
+    run(['service ssh start'])
 
 
 def root_ssh_keys():
@@ -116,17 +113,8 @@ def root_ssh_keys():
 def start_hub():
     log("start_hub")
     kill("cocalc-hub-server")
-    run("NODE_OPTIONS=--enable-source-maps cocalc-hub-server start \
-            --host=localhost \
-            --port 5000 \
-            --proxy_port 5001 \
-            --share_port 5002 \
-            --share_path='/projects/[project_id]' \
-            --update \
-            --single \
-            --foreground \
-            > /var/log/hub.log 2>/var/log/hub.err &",
-        path="/usr/lib/node_modules/smc-hub")
+    run("NODE_OPTIONS=--max_old_space_size=8000 NODE_ENV=production npm run docker > /var/log/hub.log 2>/var/log/hub.err &",
+        path="/cocalc/src/smc-hub")
 
 
 def postgres_perms():
@@ -180,34 +168,14 @@ def reset_project_state():
             time.sleep(1)
 
 
-def start_compute():
-    log("start_compute: starting the compute server")
-    # We always delete compute.sqlite3 (resetting it) since obviously all projects are stopped on container startup.
-    run("mkdir -p /projects/conf && chmod og-rwx -R /projects/conf && rm -f /projects/conf/compute.sqlite3"
-        )
-    kill("cocalc-compute-server")
-    run("SALVUS_ROOT='/cocalc/src' NODE_OPTIONS=--enable-source-maps cocalc-compute-server --host=localhost --single start 1>/var/log/compute.log 2>/var/log/compute.err &"
-        )
-    # Sleep to wait for compute server to start and write port/secret *AND* initialize the schema.
-    # TODO: should really do this right -- since if the compute-client tries to initialize schema at same, time things get hosed.
-    run(
-        """sleep 15; echo "require('smc-hub/compute-client').compute_server({cb:(e,s)=> s._add_server_single({cb:()=>process.exit(0)})})" | node & """,
-        path="/usr/lib/node_modules")
-
-
-def tail_logs():
-    log("tail_logs: starting tailing of logs")
-    run("tail -f /var/log/compute.* /var/log/hub.*")
-
 
 def main():
-    self_signed_cert('/run/haproxy.pem')
     init_projects_path()
-    start_services()
+    self_signed_cert()
     root_ssh_keys()
+    start_ssh()
     start_postgres()
     start_hub()
-    start_compute()
     reset_project_state()
     while True:
         log("waiting for all subprocesses to complete...")

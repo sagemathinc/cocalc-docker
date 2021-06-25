@@ -185,6 +185,18 @@ RUN cd /tmp \
 RUN echo "install.packages(c('repr', 'IRdisplay', 'evaluate', 'crayon', 'pbdZMQ', 'httr', 'devtools', 'uuid', 'digest', 'IRkernel'), repos='https://cloud.r-project.org')" | sage -R --no-save
 RUN echo "install.packages(c('repr', 'IRdisplay', 'evaluate', 'crayon', 'pbdZMQ', 'httr', 'devtools', 'uuid', 'digest', 'IRkernel', 'rmarkdown', 'reticulate'), repos='https://cloud.r-project.org')" | R --no-save
 
+## Xpra backend support -- we have to use the debs from xpra.org,
+RUN \
+     apt-get update \
+  && DEBIAN_FRONTEND=noninteractive apt-get install -y xvfb xsel websockify curl xpra
+
+## X11 apps to make x11 support useful.
+RUN \
+     apt-get update \
+  && DEBIAN_FRONTEND=noninteractive apt-get install -y x11-apps dbus-x11 gnome-terminal \
+     vim-gtk lyx libreoffice inkscape gimp chromium-browser texstudio evince mesa-utils \
+     xdotool xclip x11-xkb-utils
+
 
 # Commit to checkout and build.
 ARG commit=HEAD
@@ -230,17 +242,6 @@ COPY login /etc/defaults/login
 COPY run.py /root/run.py
 COPY bashrc /root/.bashrc
 
-## Xpra backend support -- we have to use the debs from xpra.org,
-RUN \
-     apt-get update \
-  && DEBIAN_FRONTEND=noninteractive apt-get install -y xvfb xsel websockify curl xpra
-
-## X11 apps to make x11 support useful.
-RUN \
-     apt-get update \
-  && DEBIAN_FRONTEND=noninteractive apt-get install -y x11-apps dbus-x11 gnome-terminal \
-     vim-gtk lyx libreoffice inkscape gimp chromium-browser texstudio evince mesa-utils \
-     xdotool xclip x11-xkb-utils
 
 # CoCalc Jupyter widgets
 RUN \

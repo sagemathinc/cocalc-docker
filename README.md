@@ -88,6 +88,16 @@ $ docker exec -it cocalc bash
 $ tail -f /var/log/hub.log
 ```
 
+### Using a custom base path
+
+If you want cocalc-docker to serve everything with a custom base path, e.g., at `https://example.com/my/base/path` set the BASE\_PATH environment variable:
+
+```sh
+docker run -e BASE_PATH=/my/base/path --name=cocalc -d -v ~/cocalc:/projects -p 443:443 sagemathinc/cocalc
+```
+
+You can change the base without having to change anything inside the image; what base path is used is entirely controlled by that environment variable.
+
 ### Installing behind an Nginx Reverse Proxy
 
 If you're running multiple sites from a single server using an Nginx reverse proxy, a setup like the following could be useful.
@@ -134,7 +144,7 @@ If you're using certbot and letsencrypt, you can then get a certificate for your
 It is **critical** that the Docker container have the correct time, since CoCalc assumes that the server has the correct time.
 On a laptop running Docker under OS X, the clock may get messed up any time you suspend/resume your laptop.  This workaround might work for you: https://github.com/arunvelsriram/docker-time-sync-agent/.
 
-### Chromebook -- yes, it totally works
+### Chromebook -- yes, it works
 
 You can run CoCalc locally on your Chromebook as long as it supports Crostini Linux.
 

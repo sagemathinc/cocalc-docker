@@ -5,8 +5,14 @@ import os, tempfile, time, shutil, subprocess, sys
 # Where the PostgreSQL data is stored
 PGDATA = '/projects/postgres/data'
 PGHOST = os.path.join(PGDATA, 'socket')
-os.environ['PGHOST'] = PGHOST
-os.environ['PGUSER'] = 'smc'
+
+# Only actually set the vars in case they aren't already set.
+# This makes it possible for users to use a custom remote PostgreSQL
+# server if they want...
+if 'PGHOST' not in os.environ:
+    os.environ['PGHOST'] = PGHOST
+if 'PGUSER' not in os.environ:
+    os.environ['PGUSER'] = 'smc'
 
 # ensure that everything we spawn has this umask, which is more secure.
 os.umask(0o077)

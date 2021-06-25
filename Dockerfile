@@ -188,6 +188,7 @@ RUN echo "install.packages(c('repr', 'IRdisplay', 'evaluate', 'crayon', 'pbdZMQ'
 
 
 # Commit to checkout and build.
+ARG BRANCH=master
 ARG commit=HEAD
 
 # Pull latest source code for CoCalc and checkout requested commit (or HEAD),
@@ -195,7 +196,7 @@ ARG commit=HEAD
 # for installing these Python libraries (TODO: move to pypi?).
 RUN \
      umask 022 && git clone --depth=1 https://github.com/sagemathinc/cocalc.git \
-  && cd /cocalc && git pull && git fetch origin && git checkout ${commit:-HEAD}
+  && cd /cocalc && git pull && git fetch origin $BRANCH:$BRANCH && git checkout ${commit:-HEAD}
 
 RUN umask 022 && pip3 install --upgrade /cocalc/src/smc_pyutil/
 

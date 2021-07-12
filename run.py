@@ -106,7 +106,7 @@ def init_projects_path():
 def start_ssh():
     log("start_ssh")
     log("starting ssh")
-    run(['service ssh start'])
+    run('service ssh start')
 
 
 def root_ssh_keys():

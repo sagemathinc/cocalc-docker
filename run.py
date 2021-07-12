@@ -119,7 +119,7 @@ def root_ssh_keys():
 def start_hub():
     log("start_hub")
     kill("cocalc-hub-server")
-    run("NODE_OPTIONS=--max_old_space_size=8000 NODE_ENV=production npm run docker > /var/log/hub.log 2>/var/log/hub.err &",
+    run("npm run hub-docker-prod > /var/log/hub.log 2>/var/log/hub.err &",
         path="/cocalc/src/smc-hub")
 
 

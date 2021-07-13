@@ -120,9 +120,7 @@ def start_hub():
     log("start_hub")
     kill("cocalc-hub-server")
     # NOTE: there's automatic logging to files that rotate as they get bigger...
-    run("mkdir -p /var/log/hub && npm run hub-docker-prod > /var/log/hub/out 2>/var/log/hub/err &",
-        path="/cocalc/src/smc-hub")
-
+    run("mkdir -p /var/log/hub && cd /cocalc/src/smc-hub && npm run hub-docker-prod > /var/log/hub/out 2>/var/log/hub/err &")
 
 def postgres_perms():
     log("postgres_perms: ensuring postgres directory perms are sufficiently restrictive"

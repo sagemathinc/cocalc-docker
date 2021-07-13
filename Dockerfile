@@ -14,7 +14,7 @@ ENV TERM screen
 # So we can source (see http://goo.gl/oBPi5G)
 RUN rm /bin/sh && ln -s /bin/bash /bin/sh
 
-# Ubuntu software that are used by CoCalc (latex, pandoc, sage, jupyter)
+# Ubuntu software that are used by CoCalc (latex, pandoc, sage)
 RUN \
      apt-get update \
   && DEBIAN_FRONTEND=noninteractive apt-get install -y \
@@ -83,11 +83,6 @@ RUN \
        graphviz \
        smem \
        octave \
-       python3-yaml \
-       python3-matplotlib \
-       python3-jupyter* \
-       python3-ipywidgets \
-       jupyter \
        locales \
        locales-all \
        postgresql \
@@ -123,6 +118,9 @@ RUN \
   && cp -rv /usr/local/sage/local/share/texmf/tex/latex/sagetex/ /usr/share/texmf/tex/latex/ \
   && texhash
 
+# Misc python3 packages...
+RUN pip3 install pyyaml matplotlib 
+
 # install the Octave kernel.
 # NOTE: we delete the spec file and use our own spec for the octave kernel, since the
 # one that comes with Ubuntu 20.04 crashes (it uses python instead of python3).
@@ -133,10 +131,24 @@ RUN \
 # Pari/GP kernel support
 RUN sage --pip install pari_jupyter
 
-# Jupyter Lab
-RUN \
-  pip3 install jupyterlab
+# Jupyter notebook and lab
+RUN pip3 install jupyter notebook jupyterlab ipywidgets
 
+# Hack1: I had weird issues with jupyterlab not loading,
+# which gets fixed by upgrading to the latest pygments:
+# RUN pip3 install --upgrade Pygments
+
+# Hack2: For no reason I can discern the "jupyter-kernelspec"
+# script doesn't get installed, which breaks a lot of things.
+# It's just a simple wrapper around importing and running 
+# the right code, so I just copy it over from our sage install,
+# but with the correct python3 script.  This bug  is discussed here:
+#   https://github.com/n-riesco/ijavascript/issues/135
+# RUN  \
+#     echo '#!'`which python3` > /usr/bin/jupyter-kernelspec \
+#  && cat /usr/local/sage/local/bin/jupyter-kernelspec >> /usr/bin/jupyter-kernelspec \
+#  && chmod a+x /usr/bin/jupyter-kernelspec
+ 
 # Install LEAN proof assistant
 RUN \
      export VERSION=3.4.1 \
@@ -157,7 +169,7 @@ RUN \
 
 # Install Node.js and LATEST version of npm
 RUN \
-     wget -qO- https://deb.nodesource.com/setup_12.x | bash - \
+     wget -qO- https://deb.nodesource.com/setup_14.x | bash - \
   && apt-get install -y nodejs libxml2-dev libxslt-dev \
   && /usr/bin/npm install -g npm
 
@@ -194,7 +206,7 @@ RUN \
 RUN \
      apt-get update \
   && DEBIAN_FRONTEND=noninteractive apt-get install -y x11-apps dbus-x11 gnome-terminal \
-     vim-gtk lyx libreoffice inkscape gimp chromium-browser texstudio evince mesa-utils \
+     vim-gtk lyx libreoffice inkscape gimp firefox texstudio evince mesa-utils \
      xdotool xclip x11-xkb-utils
 
 

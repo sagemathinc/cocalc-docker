@@ -119,7 +119,8 @@ def root_ssh_keys():
 def start_hub():
     log("start_hub")
     kill("cocalc-hub-server")
-    run("npm run hub-docker-prod > /var/log/hub.log 2>/var/log/hub.err &",
+    # NOTE: there's automatic logging to files that rotate as they get bigger...
+    run("mkdir -p /var/log/hub && npm run hub-docker-prod > /var/log/hub/out 2>/var/log/hub/err &",
         path="/cocalc/src/smc-hub")
 
 

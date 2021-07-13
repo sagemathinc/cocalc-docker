@@ -241,12 +241,19 @@ COPY kernels/ir/Rprofile.site /usr/local/sage/local/lib/R/etc/Rprofile.site
 RUN echo "en_US.UTF-8 UTF-8" > /etc/locale.gen && locale-gen
 
 # Install IJulia kernel
-RUN echo '\
-using Pkg; \
-ENV["JUPYTER"] = "/usr/local/bin/jupyter"; \
-ENV["JULIA_PKGDIR"] = "/opt/julia/share/julia/site"; \
-Pkg.add("IJulia");' | julia \
- && mv -i "$HOME/.local/share/jupyter/kernels/julia"* "/usr/local/share/jupyter/kernels/"
+# I figured out the dierectory /opt/julia/local/share/julia by inspecting the global varaible
+# DEPOT_PATH from within a running Julia session as a normal user, and also reading julia docs:
+#    https://pkgdocs.julialang.org/v1/glossary/
+# It was *incredibly* confusing, and the dozens of discussions of this problem that one finds
+# via Google are all very wrong, incomplete, misleading, etc.  It's truly amazing how 
+# disorganized-wrt-Google information about Julia is, as compared to Node.js and Python. 
+RUN echo 'using Pkg; Pkg.add("IJulia");' | JUPYTER=/usr/local/bin/jupyter JULIA_DEPOT_PATH=/opt/julia/local/share/julia JULIA_PKG=/opt/julia/local/share/julia julia
+RUN mv "$HOME/.local/share/jupyter/kernels/julia"* "/usr/local/share/jupyter/kernels/"
+
+# Also add Pluto system-wide, since we'll likely support it soon in cocalc, and also
+# Nemo and Hecke (some math software).
+RUN echo 'using Pkg; Pkg.add("Pluto"); Pkg.add("Nemo"); Pkg.add("Hecke")' | JULIA_DEPOT_PATH=/opt/julia/local/share/julia JULIA_PKG=/opt/julia/local/share/julia julia
+
 
 ### Configuration
 

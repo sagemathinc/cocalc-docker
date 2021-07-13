@@ -185,7 +185,7 @@ RUN \
 #  && its --install=global
 
 # Install Julia
-ARG JULIA=1.5.0
+ARG JULIA=1.6.1
 RUN cd /tmp \
  && wget https://julialang-s3.julialang.org/bin/linux/x64/${JULIA%.*}/julia-${JULIA}-linux-x86_64.tar.gz \
  && tar xf julia-${JULIA}-linux-x86_64.tar.gz -C /opt \
@@ -241,12 +241,12 @@ COPY kernels/ir/Rprofile.site /usr/local/sage/local/lib/R/etc/Rprofile.site
 RUN echo "en_US.UTF-8 UTF-8" > /etc/locale.gen && locale-gen
 
 # Install IJulia kernel
-#RUN echo '\
-#ENV["JUPYTER"] = "/usr/local/bin/jupyter"; \
-#ENV["JULIA_PKGDIR"] = "/opt/julia/share/julia/site"; \
-#Pkg.init(); \
-#Pkg.add("IJulia");' | julia \
-# && mv -i "$HOME/.local/share/jupyter/kernels/julia-0.6" "/usr/local/share/jupyter/kernels/"
+RUN echo '\
+using Pkg; \
+ENV["JUPYTER"] = "/usr/local/bin/jupyter"; \
+ENV["JULIA_PKGDIR"] = "/opt/julia/share/julia/site"; \
+Pkg.add("IJulia");' | julia \
+ && mv -i "$HOME/.local/share/jupyter/kernels/julia"* "/usr/local/share/jupyter/kernels/"
 
 ### Configuration
 

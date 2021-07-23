@@ -167,11 +167,15 @@ RUN \
      apt-get update \
   && apt-get install -y aspell-*
 
-# Install Node.js and LATEST version of npm
+# Install Node.js and specific version of npm
+# (npm@7.20 has a bug that makes it crash at the end of trying to install cocalc packages,
+# so I am avoiding it.  We don't actually install cocalc packages below though, since we
+# build from source.)
 RUN \
      wget -qO- https://deb.nodesource.com/setup_14.x | bash - \
   && apt-get install -y nodejs libxml2-dev libxslt-dev \
-  && /usr/bin/npm install -g npm
+  && /usr/bin/npm install -g npm@7.19.1
+
 
 # Kernel for javascript (the node.js Jupyter kernel)
 RUN \
@@ -219,7 +223,7 @@ ARG commit=HEAD
 # for installing these Python libraries (TODO: move to pypi?).
 RUN \
      umask 022 && git clone --depth=1 https://github.com/sagemathinc/cocalc.git \
-  && cd /cocalc && git pull && git fetch origin $BRANCH:$BRANCH && git checkout ${commit:-HEAD}
+  && cd /cocalc && git pull && git fetch -u origin $BRANCH:$BRANCH && git checkout ${commit:-HEAD}
 
 RUN umask 022 && pip3 install --upgrade /cocalc/src/smc_pyutil/
 

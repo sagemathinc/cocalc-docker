@@ -90,7 +90,8 @@ RUN \
        clang-format \
        yapf3 \
        golang \
-       r-cran-formatr
+       r-cran-formatr \
+       yasm
 
 # Build and install Sage -- see https://github.com/sagemath/docker-images
 COPY scripts/ /tmp/scripts
@@ -232,6 +233,9 @@ RUN umask 022 && sage -pip install --upgrade /cocalc/src/smc_sagews/
 
 # Build cocalc itself
 RUN umask 022 && cd /cocalc/src && npm run make
+
+# And cleanup npm cache, which is several hundred megabytes after building cocalc above.
+RUN rm -rf /root/.npm
 
 RUN echo "umask 077" >> /etc/bash.bashrc
 

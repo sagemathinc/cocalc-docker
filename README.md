@@ -153,9 +153,20 @@ If you're using certbot and letsencrypt, you can then get a certificate for your
 
 It is **critical** that the Docker container have the correct time, since CoCalc assumes that the server has the correct time.On a laptop running Docker under MacOS, the clock may get messed up any time you suspend/resume your laptop.  This workaround might work for you: https://github.com/arunvelsriram/docker-time-sync-agent/.
 
-#### Apple Silicon M1
+#### Apple Silicon M1 does **NOT** fully work
 
-There are no apple Silicon binaries.  However, assuming you have Rosetta2 installed, the x86\_64 Docker image will work. 
+There are no apple Silicon binaries yet.  However, assuming you have Rosetta2 installed, the x86\_64 Docker image will _**halfway**_ work. You can start it up, and do many things (e.g., run a Julia kernel in Jupyter).  However **starting Sage fails** as you can see in a terminal:
+
+```sh
+~$ sage
+┌────────────────────────────────────────────────────────────────────┐
+│ SageMath version 9.3, Release Date: 2021-05-09                     │
+│ Using Python 3.8.5. Type "help()" for help.                        │
+└────────────────────────────────────────────────────────────────────┘
+cysignals sigaltstack: Invalid argument
+```
+
+I assume this is an issue with emulation.  If you aren't using Sage this might be OK.   This issue is being tracked [here](https://github.com/sagemathinc/cocalc-docker/issues/100).
 
 #### Security issues
 

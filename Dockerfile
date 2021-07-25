@@ -202,8 +202,8 @@ RUN cd /tmp \
  && ln -s /opt/julia/bin/julia /usr/local/bin
 
 # Install R Jupyter Kernel package into R itself (so R kernel works), and some other packages e.g., rmarkdown which requires reticulate to use Python.
-RUN echo "install.packages(c('repr', 'IRdisplay', 'evaluate', 'crayon', 'pbdZMQ', 'httr', 'devtools', 'uuid', 'digest', 'IRkernel'), repos='https://cloud.r-project.org')" | sage -R --no-save
-RUN echo "install.packages(c('repr', 'IRdisplay', 'evaluate', 'crayon', 'pbdZMQ', 'httr', 'devtools', 'uuid', 'digest', 'IRkernel', 'rmarkdown', 'reticulate'), repos='https://cloud.r-project.org')" | R --no-save
+RUN echo "install.packages(c('repr', 'IRdisplay', 'evaluate', 'crayon', 'pbdZMQ', 'httr', 'devtools', 'uuid', 'digest', 'IRkernel', 'formatR'), repos='https://cloud.r-project.org')" | sage -R --no-save
+RUN echo "install.packages(c('repr', 'IRdisplay', 'evaluate', 'crayon', 'pbdZMQ', 'httr', 'devtools', 'uuid', 'digest', 'IRkernel', 'rmarkdown', 'reticulate', 'formatR'), repos='https://cloud.r-project.org')" | R --no-save
 
 ## Xpra backend support -- we have to use the debs from xpra.org,
 RUN \

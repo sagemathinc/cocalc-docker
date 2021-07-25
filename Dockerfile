@@ -119,6 +119,9 @@ RUN \
   && cp -rv /usr/local/sage/local/share/texmf/tex/latex/sagetex/ /usr/share/texmf/tex/latex/ \
   && texhash
 
+# Save nearly 5GB -- only do after installing all sage stuff!:
+RUN rm -rf /usr/local/sage/build/pkgs/sagelib/src/build
+
 # Misc python3 packages...
 RUN pip3 install pyyaml matplotlib 
 

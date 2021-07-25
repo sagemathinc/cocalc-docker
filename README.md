@@ -98,7 +98,7 @@ You can change the base without having to change anything inside the image; what
 
 ### NEW: Disable idle timeout
 
-Projects will stop by default if they are idle for 30 minutes.  Admins can manually increase this for any project.  If you want to completely disable the idle timeout functionality, set the `COCALC_NO_IDLE_TIMEOUT` environment variable.  Note that the user interface will still show an idle timeout -- it's just that it will have no impact. 
+Projects will stop by default if they are idle for 30 minutes.  Admins can manually increase this for any project.  If you want to completely disable the idle timeout functionality, set the `COCALC_NO_IDLE_TIMEOUT` environment variable.  Note that the user interface will still show an idle timeout -- it's just that it will have no impact.
 
 ```sh
 docker run -e COCALC_NO_IDLE_TIMEOUT=yes --name=cocalc -d -v ~/cocalc:/projects -p 443:443 sagemathinc/cocalc
@@ -147,12 +147,21 @@ And soft-link it to your `sites-enabled` folder, e.g. `sudo ln -s /etc/nginx/sit
 
 If you're using certbot and letsencrypt, you can then get a certificate for your domain using something like `sudo certbot --nginx` and selecting "mycocalc.com", which will automatically set up an ssl cert and modify your nginx server file.
 
-### OS X -- Clock skew
+### MacOS (running on localhost)
 
-It is **critical** that the Docker container have the correct time, since CoCalc assumes that the server has the correct time.
-On a laptop running Docker under OS X, the clock may get messed up any time you suspend/resume your laptop.  This workaround might work for you: https://github.com/arunvelsriram/docker-time-sync-agent/.
+#### Clock skew
 
-### Chromebook -- yes, it works
+It is **critical** that the Docker container have the correct time, since CoCalc assumes that the server has the correct time.On a laptop running Docker under MacOS, the clock may get messed up any time you suspend/resume your laptop.  This workaround might work for you: https://github.com/arunvelsriram/docker-time-sync-agent/.
+
+#### Apple Silicon M1
+
+There are no apple Silicon binaries.  However, assuming you have Rosetta2 installed, the x86\_64 Docker image will work. 
+
+#### Security issues
+
+Cocalc-docker by default uses a self signed certificate on localhost.  Chrome and Safari won't even let you connect.  However, with Firefox you can click through some warnings and use CoCalc-docker just fine.   So you _**must uses Firefox**_ when running CoCalc-docker locally on MacOS.
+
+### Chromebook
 
 You can run CoCalc locally on your Chromebook as long as it supports Crostini Linux.
 
@@ -268,8 +277,7 @@ Refresh your browser, and then you should see an extra admin panel in the lower 
 
 ### Make a _project_ have sudo access
 
-You can also make it so that running `sudo su` in a CoCalc terminal allows a project to gain root access.  First as above, from outside of CoCalc, do 
-`docker exec -it cocalc bash`, then type `visudo`:
+You can also make it so that running `sudo su` in a CoCalc terminal allows a project to gain root access.  First as above, from outside of CoCalc, do`docker exec -it cocalc bash`, then type `visudo`:
 
 ```
 $ docker exec -it cocalc bash

@@ -4,7 +4,7 @@
 
 **Quickstart on a Linux server**
 
-1. Make sure you have at least **15GB disk space free and Docker installed.**
+1. Make sure you have at least **20GB disk space free and Docker installed.**
 2. Run
 
 ```sh
@@ -37,7 +37,7 @@ This is a free open-source  multiuser CoCalc server that you can _**very easily*
 
 ## Instructions
 
-Install Docker on your computer (e.g., `apt-get install docker.io` on Ubuntu).   Make sure you have at least **15GB disk space free**, then type:
+Install Docker on your computer (e.g., `apt-get install docker.io` on Ubuntu).   Make sure you have at least **20GB disk space free**, then type:
 
     docker run --name=cocalc -d -v ~/cocalc:/projects -p 443:443 sagemathinc/cocalc
 

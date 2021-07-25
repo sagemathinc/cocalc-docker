@@ -1,7 +1,5 @@
 # CoCalc Docker image
 
-[![](https://images.microbadger.com/badges/image/sagemathinc/cocalc.svg)](https://microbadger.com/images/sagemathinc/cocalc "Size and number of layers")
-
 **Quickstart on a Linux server**
 
 1. Make sure you have at least **20GB disk space free and Docker installed.**
@@ -88,7 +86,7 @@ $ docker exec -it cocalc bash
 $ tail -f /var/log/hub.log
 ```
 
-### Using a custom base path
+### NEW: Using a custom base path
 
 If you want cocalc-docker to serve everything with a custom base path, e.g., at `https://example.com/my/base/path` set the BASE\_PATH environment variable:
 
@@ -98,13 +96,23 @@ docker run -e BASE_PATH=/my/base/path --name=cocalc -d -v ~/cocalc:/projects -p 
 
 You can change the base without having to change anything inside the image; what base path is used is entirely controlled by that environment variable.
 
+### NEW: Disable idle timeout
+
+Projects will stop by default if they are idle for 30 minutes.  Admins can manually increase this for any project.  If you want to completely disable the idle timeout functionality, set the `COCALC_NO_IDLE_TIMEOUT` environment variable.  Note that the user interface will still show an idle timeout -- it's just that it will have no impact. 
+
+```sh
+docker run -e COCALC_NO_IDLE_TIMEOUT=yes --name=cocalc -d -v ~/cocalc:/projects -p 443:443 sagemathinc/cocalc
+```
+
 ### Installing behind an Nginx Reverse Proxy
 
 If you're running multiple sites from a single server using an Nginx reverse proxy, a setup like the following could be useful.
 
 Instead of mapping port 443 on the container to 443 on the host, map 443 on the container to an arbitray unused port on the host, e.g. 9090:
 
-    docker run --name=cocalc -d -v ~/cocalc:/projects -p 9090:443 sagemathinc/cocalc
+```sh
+docker run --name=cocalc -d -v ~/cocalc:/projects -p 9090:443 sagemathinc/cocalc
+```
 
 In your nginx `sites-available` folder, create a file like the following called e.g. `mycocalc`:
 

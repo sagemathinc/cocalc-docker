@@ -278,13 +278,27 @@ chmod 600 .ssh/authorized_keys
 
 Get a bash shell insider the container, then connect to the database and make a user (me!) an admin as follows:
 
-```
-$ docker exec -it cocalc bash
-root@931045eda11f:/# make-user-admin wstein@gmail.com
+```sh
+$ sudo docker exec -it cocalc-test bash
+root@17fecb49c5c2:/# cd /cocalc/src/scripts
+root@17fecb49c5c2:/cocalc/src/scripts# ./make-user-admin wstein@gmail.com
+UPDATE 1
 ```
 
-Obviously, you should really make the user you created (with its email address) an admin, not me!
-Refresh your browser, and then you should see an extra admin panel in the lower right of accounts settings; you can also open any project by directly visiting its URL.
+Obviously, you should really make the user you created (with its email address) an admin, not me!Refresh your browser, and then you should see an extra admin tab and the top of your browser window; you can also open any project by directly visiting its URL, and change the idle timeout and always running settings.  In the Admin tab you can search for users, impersonate any user, ban users, configure dozens of things about CoCalc, send a notification that all signed in users see, and more.
+
+Note that the make-user-admin script is in /cocalc/src/scripts.  Take a look at it:
+
+```sh
+root@17fecb49c5c2:/cocalc/src/scripts# more ./make-user-admin
+...
+echo "update accounts set groups='{admin}' where email_address='$1'" | psql
+```
+
+As you can see, aside from some error checking, the entire script is just a 1-line PostgreSQL query.If you know basic SQL, you can  very easily do all kinds of interesting things.If you type `psql` as root, you'll get the PostgreSQL shell connected to the database for CoCalc.Type `\d` to see the tables, and `\d tablename` for more about a particular table.  For example,typing `\d accounts` shows all the fields in the accounts table, and groups is one of them.Here's [where in the source code](https://github.com/sagemathinc/cocalc/tree/master/src/smc-util/db-schema) ofCoCalc itself all of these database tables are defined.    In any case, being aware of all this can be very helpfulif you want to do some batch action, e.g., :
+
+- delete all accounts that are old or inactive
+- query to get the status of projects or accounts
 
 ### Make a _project_ have sudo access
 

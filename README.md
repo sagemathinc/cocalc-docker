@@ -279,13 +279,13 @@ chmod 600 .ssh/authorized_keys
 Get a bash shell insider the container, then connect to the database and make a user (me!) an admin as follows:
 
 ```sh
-$ sudo docker exec -it cocalc-test bash
+$ sudo docker exec -it cocalc bash
 root@17fecb49c5c2:/# cd /cocalc/src/scripts
 root@17fecb49c5c2:/cocalc/src/scripts# ./make-user-admin wstein@gmail.com
 UPDATE 1
 ```
 
-Obviously, you should really make the user you created (with its email address) an admin, not me!Refresh your browser, and then you should see an extra admin tab and the top of your browser window; you can also open any project by directly visiting its URL, and change the idle timeout and always running settings.  In the Admin tab you can search for users, impersonate any user, ban users, configure dozens of things about CoCalc, send a notification that all signed in users see, and more.
+Obviously, you should really make the user you created (with its email address) an admin, not me!Refresh your browser, and then you should see an extra admin tab and the top of your browser window; you can also open any project by directly visiting its URL, and change the idle timeout and always running settings.  In the Admin tab you can search for users, impersonate any user, ban users, configure dozens of things about CoCalc, send a notification that all signed in users see, and more.  One thing admin users can't do is get a root shell -- for that you have to use `sudo docker exec -it cocalc bash` (of course, CoCalc is just Ubuntu linux, so you could make it so a specific project can become root via sudo).
 
 Note that the make-user-admin script is in /cocalc/src/scripts.  Take a look at it:
 

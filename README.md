@@ -168,7 +168,7 @@ cysignals sigaltstack: Invalid argument
 
 I assume this is an issue with emulation.  If you aren't using Sage this might be OK.   This issue is being tracked [here](https://github.com/sagemathinc/cocalc-docker/issues/100).
 
-#### Security issues
+#### You CANNOT use Chrome or Safari: you **must** use Firefox
 
 Cocalc-docker by default uses a self signed certificate on localhost.  Chrome and Safari won't even let you connect.  However, with Firefox you can click through some warnings and use CoCalc-docker just fine.   So you _**must uses Firefox**_ when running CoCalc-docker locally on MacOS.
 

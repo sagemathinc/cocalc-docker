@@ -171,14 +171,10 @@ RUN \
      apt-get update \
   && apt-get install -y aspell-*
 
-# Install Node.js and specific version of npm
-# (npm@7.20 has a bug that makes it crash at the end of trying to install cocalc packages,
-# so I am avoiding it.  We don't actually install cocalc packages below though, since we
-# build from source.)
 RUN \
      wget -qO- https://deb.nodesource.com/setup_14.x | bash - \
   && apt-get install -y nodejs libxml2-dev libxslt-dev \
-  && /usr/bin/npm install -g npm@7.19.1
+  && /usr/bin/npm install -g npm
 
 
 # Kernel for javascript (the node.js Jupyter kernel)
@@ -205,17 +201,25 @@ RUN cd /tmp \
 RUN echo "install.packages(c('repr', 'IRdisplay', 'evaluate', 'crayon', 'pbdZMQ', 'httr', 'devtools', 'uuid', 'digest', 'IRkernel', 'formatR'), repos='https://cloud.r-project.org')" | sage -R --no-save
 RUN echo "install.packages(c('repr', 'IRdisplay', 'evaluate', 'crayon', 'pbdZMQ', 'httr', 'devtools', 'uuid', 'digest', 'IRkernel', 'rmarkdown', 'reticulate', 'formatR'), repos='https://cloud.r-project.org')" | R --no-save
 
-## Xpra backend support -- we have to use the debs from xpra.org,
+# Xpra backend support -- we have to use the debs from xpra.org,
 RUN \
      apt-get update \
   && DEBIAN_FRONTEND=noninteractive apt-get install -y xvfb xsel websockify curl xpra
 
-## X11 apps to make x11 support useful.
+# X11 apps to make x11 support useful.
 RUN \
      apt-get update \
   && DEBIAN_FRONTEND=noninteractive apt-get install -y x11-apps dbus-x11 gnome-terminal \
      vim-gtk lyx libreoffice inkscape gimp firefox texstudio evince mesa-utils \
      xdotool xclip x11-xkb-utils
+
+# VSCode code-server web application
+# See https://github.com/cdr/code-server/releases for VERSION.
+RUN \
+     export VERSION=3.11.0 \
+  && curl -fOL https://github.com/cdr/code-server/releases/download/v$VERSION/code-server_"$VERSION"_amd64.deb \
+  && dpkg -i code-server_"$VERSION"_amd64.deb \
+  && rm code-server_"$VERSION"_amd64.deb
 
 
 # Commit to checkout and build.
@@ -266,7 +270,7 @@ RUN mv "$HOME/.local/share/jupyter/kernels/julia"* "/usr/local/share/jupyter/ker
 RUN echo 'using Pkg; Pkg.add("Pluto"); Pkg.add("Nemo"); Pkg.add("Hecke")' | JULIA_DEPOT_PATH=/opt/julia/local/share/julia JULIA_PKG=/opt/julia/local/share/julia julia
 
 
-### Configuration
+# Configuration
 
 COPY login.defs /etc/login.defs
 COPY login /etc/defaults/login

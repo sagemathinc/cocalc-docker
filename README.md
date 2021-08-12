@@ -412,6 +412,21 @@ Once done, you can delete and recreate your CoCalc container: (This will not del
 
 Now visit https://localhost to see your upgraded server.
 
+#### Upgrade just the CoCalc source code (potentially tricky)
+
+Instead of upgrading the Docker image, you could upgrade the source code of cocalc to the latest master version (or any other commit or branch) as follows.
+
+First become root in your container: `docker exec -it cocalc bash`, then:
+
+```sh
+root@...:~# umask 022
+root@...:~# cd /cocalc/src
+root@...:/cocalc/src# git pull
+root@...:/cocalc/src# npm run make
+```
+
+This should take about 15 minutes.  It could randomly fail if some npm package is temporarily not available; if that happens, try again.   Once it finishes successfully, stop your container, then start it again.   Upgrading this way does not upgrade any system-wide Ubuntu packages or configuration, so it might result in a broken Docker container.  In that case, your data should be fine, and you can upgrade as described in the section above.
+
 ## Adding custom software to your CoCalc instance
 
 The CoCalc Docker images at Docker Hub contain a subset of all the software in at [cocalc.com](https://cocalc.com). At present, the images are about 12 GB while the cloud service has hundreds of GB of packages and libraries.

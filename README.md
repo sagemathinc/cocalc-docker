@@ -1,5 +1,7 @@
 # CoCalc Docker image
 
+GitHub: https://github.com/sagemathinc/cocalc-docker
+
 **Quickstart on a Linux server**
 
 1. Make sure you have at least **20GB disk space free and Docker installed.**

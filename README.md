@@ -451,6 +451,10 @@ Additional notes:
 - Most instructions for adding packages to Ubuntu 18.04 should work for CoCalc-Docker, for example `pip install` for Python 2 packages, and `pip3 install` for Python 3 packages.
 - Whenever you upgrade your CoCalc image from Docker Hub as described in **Upgrade** above, you will need to repeat the above steps.
 
+## User-contributed scripts
+
+- See the [contrib](./contrib) subdirectory here for  scripts contributing by people that are running their own cocalc-docker servers.  For example, there is a Python script for removing old accounts and old or deleted projects. 
+
 ## Troubleshooting
 
 - [A short guide](./TROUBLESHOOTING.md)

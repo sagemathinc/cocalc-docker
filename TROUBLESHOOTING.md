@@ -6,7 +6,7 @@ This may be of use in understanding how cocalc-docker works.
 
 Each project has several logfiles.
 
-- The overall project server has a logfile located in `~/.smc/local_hub/local_hub.log`.
+- The overall project server has a logfile located in `~/.smc/logs/log`.
 
 - The Sage server has a logfile in `~/.smc/sage_server/sage_server.log`, which may be relevant is you are using Sage worksheets.
 
@@ -38,16 +38,3 @@ You can also change any of code in ``/cocalc/src/smc-hub`, do `npm run build` th
 
 There is also a  PostgreSQL database running in cocalc-docker.  It is setup using a standard system-wide scripts, with configuration and log in the usual places. The database that the hub uses is determined by the env variables `PGHOST` and `PGUSER` .   In theory, you could set those (when running Docker) and use a completely different database. The defaults are setup in `/root/run.py`.
 
-## How projects are started
-
-The hub currently starts and stops projects by running a Python script:
-
-```
-/cocalc/src/smc_pyutil/smc_pyutil/smc_compute.py
-```
-
-Modifying this can be useful in case you want to change Linux groups of projects, etc.  After changing it, you would have to reinstall it systemwide:
-
-```sh
-umask 022 && pip3 install --upgrade /cocalc/src/smc_pyutil/
-```

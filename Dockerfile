@@ -94,8 +94,8 @@ RUN \
        yasm
 
 # Build and install Sage -- see https://github.com/sagemath/docker-images
-COPY scripts/ /tmp/scripts
-RUN chmod -R +x /tmp/scripts
+COPY scripts/ /usr/sage-install-scripts/
+RUN chmod -R a+rx /usr/sage-install-scripts/
 
 RUN    adduser --quiet --shell /bin/bash --gecos "Sage user,101,," --disabled-password sage \
     && chown -R sage:sage /home/sage/
@@ -108,10 +108,10 @@ RUN    adduser --quiet --shell /bin/bash --gecos "Sage user,101,," --disabled-pa
 # correctly and the build will fail!
 RUN    mkdir -p /usr/local/sage \
     && chown -R sage:sage /usr/local/sage \
-    && sudo -H -E -u sage /tmp/scripts/install_sage.sh /usr/local/ master \
+    && sudo -H -E -u sage /usr/sage-install-scripts/install_sage.sh /usr/local/ 9.3 \
     && sync
 
-RUN /tmp/scripts/post_install_sage.sh /usr/local/ && rm -rf /tmp/* && sync
+RUN /usr/sage-install-scripts/post_install_sage.sh /usr/local/ && rm -rf /tmp/* && sync
 
 # Install SageTex
 RUN \

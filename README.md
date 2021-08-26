@@ -349,9 +349,17 @@ This does NOT set the password.  It just makes a password reset link, which you 
 - You do not have email setup.  It is possible to setup Sendgrid so your cocalc-docker image sends out email, but we haven't documented that yet...
 - You have email setup, but it sometimes fails for users with aggressive spam filtering.
 
-#### Registration Tokens
+### Registration Tokens
 
 After making your main account an admin as above, search for " Registration Tokens" in the Admin tab.  Create one or more tokens and share them with people who you want to use your server.  Nobody else will be able to make an account.
+
+### Public Sharing of Files
+
+By default users are NOT allowed to share files publicly, and the server at your\_server/share is disabled.  You can enable the share server and public file sharing in Admin --&gt; Site Settings --&gt; "Allow public file sharing".   
+
+### Anonymous Accounts
+
+Similar to public file sharing, users are not allowed to make an account without entering an email address and password.   You can further restrict users by requiring a registration token or via disabling "Allow email signup" in Admin --&gt; Site Settings.  On the other hand, you can allow anybody to use your server _**without even creating an account**_ by going to Admin --&gt; Site Settings --&gt; "Allow anonymous signup".   You probably don't want to do this.
 
 ### Terminal Height
 
@@ -455,7 +463,7 @@ Additional notes:
 
 ## User-contributed scripts
 
-- See the [contrib](./contrib) subdirectory here for  scripts contributing by people that are running their own cocalc-docker servers.  For example, there is a Python script for removing old accounts and old or deleted projects. 
+- See the [contrib](./contrib) subdirectory here for  scripts contributing by people that are running their own cocalc-docker servers.  For example, there is a Python script for removing old accounts and old or deleted projects.
 
 ## Troubleshooting
 

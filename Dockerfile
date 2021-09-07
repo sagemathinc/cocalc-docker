@@ -122,8 +122,7 @@ RUN \
 # Save nearly 5GB -- only do after installing all sage stuff!:
 RUN rm -rf /usr/local/sage/build/pkgs/sagelib/src/build
 
-# Misc python3 packages...
-RUN pip3 install pyyaml matplotlib 
+RUN apt-get install -y python3-yaml   python3-matplotlib  python3-jupyter*  python3-ipywidgets jupyter
 
 # install the Octave kernel.
 # NOTE: we delete the spec file and use our own spec for the octave kernel, since the
@@ -135,24 +134,6 @@ RUN \
 # Pari/GP kernel support
 RUN sage --pip install pari_jupyter
 
-# Jupyter notebook and lab
-RUN pip3 install jupyter notebook jupyterlab ipywidgets
-
-# Hack1: I had weird issues with jupyterlab not loading,
-# which gets fixed by upgrading to the latest pygments:
-# RUN pip3 install --upgrade Pygments
-
-# Hack2: For no reason I can discern the "jupyter-kernelspec"
-# script doesn't get installed, which breaks a lot of things.
-# It's just a simple wrapper around importing and running 
-# the right code, so I just copy it over from our sage install,
-# but with the correct python3 script.  This bug  is discussed here:
-#   https://github.com/n-riesco/ijavascript/issues/135
-# RUN  \
-#     echo '#!'`which python3` > /usr/bin/jupyter-kernelspec \
-#  && cat /usr/local/sage/local/bin/jupyter-kernelspec >> /usr/bin/jupyter-kernelspec \
-#  && chmod a+x /usr/bin/jupyter-kernelspec
- 
 # Install LEAN proof assistant
 RUN \
      export VERSION=3.4.1 \

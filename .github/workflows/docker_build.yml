@@ -1,0 +1,22 @@
+name:  Build Image & Push to Dockerhub
+
+on:
+  schedule:
+    - cron: '0 0 1 * *'
+  workflow_dispatch:
+
+jobs:
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+        - uses: actions/checkout@v2
+          name: Check out code
+         
+        - uses: mr-smithers-excellent/docker-build-push@v5
+          name: Build & push Docker image
+          with:
+            image: melashri/cocalc
+            tags: base
+            registry: docker.io
+            username: ${{ secrets.DOCKER_USERNAME }}
+            password: ${{ secrets.DOCKER_PASSWORD }}

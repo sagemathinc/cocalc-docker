@@ -15,21 +15,13 @@ ENV TERM screen
 RUN rm /bin/sh && ln -s /bin/bash /bin/sh
 
 # Ubuntu software that are used by CoCalc (latex, pandoc, sage)
-RUN \
-     apt-get update \
-  && DEBIAN_FRONTEND=noninteractive apt-get install -y \
-       software-properties-common \
-       texlive \
-       texlive-latex-extra \
-       texlive-extra-utils \
-       texlive-xetex \
-       texlive-luatex \
-       texlive-bibtex-extra \
-       liblog-log4perl-perl
 
 RUN \
     apt-get update \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y \
+       software-properties-common \
+       wget \
+       perl-tk \
        tmux \
        flex \
        bison \
@@ -64,7 +56,6 @@ RUN \
        subversion \
        ssh \
        m4 \
-       latexmk \
        libpq5 \
        libpq-dev \
        build-essential \
@@ -93,11 +84,21 @@ RUN \
        r-cran-formatr \
        yasm
 
+# install TexLive using intstall-tl
+COPY texlive.profile /tmp/texlive.profile
+RUN wget http://mirror.ctan.org/systems/texlive/tlnet/install-tl-unx.tar.gz \
+    &&  tar -xzf install-tl-unx.tar.gz \
+    && rm install-tl-unx.tar.gz \
+    && cd install-tl-* \
+    && ./install-tl -profile /tmp/texlive.profile \
+    && cd .. \
+    && rm -rf install-tl-*
+
 # Build and install Sage -- see https://github.com/sagemath/docker-images
 COPY scripts/ /usr/sage-install-scripts/
 RUN chmod -R a+rx /usr/sage-install-scripts/
 
-RUN    adduser --quiet --shell /bin/bash --gecos "Sage user,101,," --disabled-password sage \
+RUN adduser --quiet --shell /bin/bash --gecos "Sage user,101,," --disabled-password sage \
     && chown -R sage:sage /home/sage/
 
 # make source checkout target, then run the install script
@@ -106,7 +107,7 @@ RUN    adduser --quiet --shell /bin/bash --gecos "Sage user,101,," --disabled-pa
 # Here -E inherits the environment from root, however it's important to
 # include -H to set HOME=/home/sage, otherwise DOT_SAGE will not be set
 # correctly and the build will fail!
-RUN    mkdir -p /usr/local/sage \
+RUN mkdir -p /usr/local/sage \
     && chown -R sage:sage /usr/local/sage \
     && sudo -H -E -u sage /usr/sage-install-scripts/install_sage.sh /usr/local/ 9.2 \
     && sync
@@ -116,7 +117,8 @@ RUN /usr/sage-install-scripts/post_install_sage.sh /usr/local/ && rm -rf /tmp/* 
 # Install SageTex
 RUN \
      sudo -H -E -u sage sage -p sagetex \
-  && cp -rv /usr/local/sage/local/share/texmf/tex/latex/sagetex/ /usr/share/texmf/tex/latex/ \
+  && cp -rv /usr/local/sage/local/share/texmf/tex/latex/sagetex/ /usr/local/texlive/texmf-local \
+  && export PATH=/usr/local/texlive/bin/x86_64-linux:$PATH \
   && texhash
 
 # Save nearly 5GB -- only do after installing all sage stuff!:
@@ -294,5 +296,7 @@ CMD /root/run.py
 
 ARG BUILD_DATE
 LABEL org.label-schema.build-date=$BUILD_DATE
+
+ENV PATH=/usr/local/texlive/bin/x86_64-linux:$PATH
 
 EXPOSE 22 80 443

@@ -9,6 +9,8 @@ shopt -s checkwinsize
 if [ -x /usr/bin/dircolors ]; then
     test -r ~/.dircolors && eval "$(dircolors -b ~/.dircolors)" || eval "$(dircolors -b)"
     alias ls='ls --color=auto'
+    alias ll='ls -l --color=auto'
+    alias lll='ls -la --color=auto'
     alias grep='grep --color=auto'
     alias fgrep='fgrep --color=auto'
     alias egrep='egrep --color=auto'
@@ -18,3 +20,4 @@ fi
 export PGHOST=/projects/postgres/data/socket
 export PGUSER=smc
 export PGDATABASE=smc
+export PATH=/usr/local/texlive/bin/x86_64-linux:$PATH

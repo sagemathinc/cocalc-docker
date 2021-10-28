@@ -199,7 +199,7 @@ RUN \
 # VSCode code-server web application
 # See https://github.com/cdr/code-server/releases for VERSION.
 RUN \
-     export VERSION=3.11.0 \
+     export VERSION=3.12.0 \
   && curl -fOL https://github.com/cdr/code-server/releases/download/v$VERSION/code-server_"$VERSION"_amd64.deb \
   && dpkg -i code-server_"$VERSION"_amd64.deb \
   && rm code-server_"$VERSION"_amd64.deb

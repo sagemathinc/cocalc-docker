@@ -29,11 +29,6 @@ cd sage
 make configure
 ./configure
 
-# This may fail: https://trac.sagemath.org/ticket/23519
-make || true
-# Because of "stupid" static GMP's get left around that break the build.
-# So we try again with the static GMP's removed.
-rm "$SAGE_SRC_TARGET"/sage/local/lib/libgmp*.a
 make
 
 # Clean up artifacts from the sage build that we don't need for runtime or

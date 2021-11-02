@@ -93,6 +93,17 @@ RUN \
        r-cran-formatr \
        yasm
 
+# These are specifically packages that we install since building them as
+# part of Sage can be problematic (e.g., on aarch64).  Dima encouraged me
+# to list all the packages Sage suggests (so a long list of dozens of packages),
+# but I tried that and of course it failed.  Also, since Sage integration
+# testing is done with specific versions of things, it seems very highly unlikely
+# that we'll have a stable robust build by installing whatever happens to
+# be the newest versions of packages from Ubuntu.
+RUN \
+   apt-get update \
+&& DEBIAN_FRONTEND=noninteractive apt-get install -y tachyon
+
 # Build and install Sage -- see https://github.com/sagemath/docker-images
 COPY scripts/ /usr/sage-install-scripts/
 RUN chmod -R a+rx /usr/sage-install-scripts/
@@ -102,26 +113,31 @@ RUN    adduser --quiet --shell /bin/bash --gecos "Sage user,101,," --disabled-pa
 
 # make source checkout target, then run the install script
 # see https://github.com/docker/docker/issues/9547 for the sync
-# Sage can't be built as root, for reasons...
+# TODO: It used to be that Sage couldn't be built as root, but now it can with 
+# a special flag, but we still workaround this below.
 # Here -E inherits the environment from root, however it's important to
 # include -H to set HOME=/home/sage, otherwise DOT_SAGE will not be set
 # correctly and the build will fail!
 RUN    mkdir -p /usr/local/sage \
     && chown -R sage:sage /usr/local/sage \
-    && sudo -H -E -u sage /usr/sage-install-scripts/install_sage.sh /usr/local/ 9.2 \
+    && sudo -H -E -u sage /usr/sage-install-scripts/install_sage.sh /usr/local/ 9.5.beta5 \
     && sync
 
 RUN /usr/sage-install-scripts/post_install_sage.sh /usr/local/ && rm -rf /tmp/* && sync
 
-# Install SageTex
+# Install SageTex.
+# This used to be from /usr/local/sage/local/share/texmf/tex/latex/sagetex/
+# but it moved in sage 9.5:
 RUN \
      sudo -H -E -u sage sage -p sagetex \
-  && cp -rv /usr/local/sage/local/share/texmf/tex/latex/sagetex/ /usr/share/texmf/tex/latex/ \
+  && cp -rv /usr/local/sage/local/var/lib/sage/venv-python*/share/texmf/tex/latex/sagetex/ /usr/share/texmf/tex/latex/ \
   && texhash
 
 # Save nearly 5GB -- only do after installing all sage stuff!:
 RUN rm -rf /usr/local/sage/build/pkgs/sagelib/src/build
 
+# Important: do not try to install these directly from pypi, since usually (and strangely?)
+# what is posted to Pypi is broken.  Yes, I learned the hard way.
 RUN apt-get install -y python3-yaml   python3-matplotlib  python3-jupyter*  python3-ipywidgets jupyter
 
 # install the Octave kernel.
@@ -132,7 +148,8 @@ RUN \
   && rm -rf /usr/local/share/jupyter/kernels/octave
 
 # Pari/GP kernel support
-RUN sage --pip install pari_jupyter
+# Commented out since it doesn't build anymore with newer Sage, evidently...
+# RUN sage --pip install pari_jupyter
 
 # Install LEAN proof assistant
 RUN \
@@ -197,10 +214,11 @@ RUN \
 # VSCode code-server web application
 # See https://github.com/cdr/code-server/releases for VERSION.
 RUN \
-     export VERSION=3.11.0 \
-  && curl -fOL https://github.com/cdr/code-server/releases/download/v$VERSION/code-server_"$VERSION"_amd64.deb \
-  && dpkg -i code-server_"$VERSION"_amd64.deb \
-  && rm code-server_"$VERSION"_amd64.deb
+     export VERSION=3.12.0 \
+  && export ARCH=`uname -m | sed s/aarch64/arm64/ | sed s/x86_64/amd64/` \
+  && curl -fOL https://github.com/cdr/code-server/releases/download/v$VERSION/code-server_"$VERSION"_"$ARCH".deb \
+  && dpkg -i code-server_"$VERSION"_"$ARCH".deb \
+  && rm code-server_"$VERSION"_"$ARCH".deb
 
 
 # Commit to checkout and build.

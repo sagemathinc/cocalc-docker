@@ -13,11 +13,11 @@ docker run --name=cocalc -d -v ~/cocalc:/projects -p 443:443 sagemathinc/cocalc
 
 3. Wait a few minutes for the image to pull, decompress and the container to start, then visit https://localhost.
 
-For other operating systems and way more details, see below.
+For other operating systems and way more details, see below.  But a quick note, if you are using aarch64 (e.g., Apple Silicon or Rasberry Pi 64-bit), use `sagemathinc/cocalc-aarch64` instead of `sagemathinc/cocalc` for a native binary!
 
 ## What is this?
 
-**Run CoCalc for free for a small group on your own server!**
+**Run CoCalc for free for a small group on your own server or laptop!**
 
 This is a free open-source  multiuser CoCalc server that you can _**very easily**_ install on your own computer or server using Docker.  If you need something to install on a cluster of servers using Kubernetes, see [cocalc-kubernetes](https://github.com/sagemathinc/cocalc-kubernetes).
 
@@ -37,7 +37,7 @@ This is a free open-source  multiuser CoCalc server that you can _**very easily*
 
 ## Instructions
 
-Install Docker on your computer (e.g., `apt-get install docker.io` on Ubuntu).   Make sure you have at least **20GB disk space free**, then type:
+Install Docker on your computer (e.g., `apt-get install docker.io` on Ubuntu).   Make sure you have at least **25GB disk space free**, then type:
 
     docker run --name=cocalc -d -v ~/cocalc:/projects -p 443:443 sagemathinc/cocalc
 
@@ -45,7 +45,7 @@ wait a few minutes for the image to pull, decompress and the container to start,
 
 NOTES:
 
-- This Docker image only supports 64-bit Intel.
+- This Docker image only supports 64-bit Intel.  For ARM aarch64 (e.g., Apple Silicon) just replace sagemathinc/cocalc above by sagemathinc/cocalc-aarch64. 
 
 - If you get an error about the Docker daemon, instead run `sudo docker ...`.
 
@@ -88,7 +88,9 @@ $ docker exec -it cocalc bash
 $ tail -f /var/log/hub.log
 ```
 
-### NEW: Using a custom base path
+### ~~NEW: Using a custom base path~~
+
+UPDATE: This feature no longer works.
 
 If you want cocalc-docker to serve everything with a custom base path, e.g., at `https://example.com/my/base/path` set the BASE\_PATH environment variable:
 
@@ -153,24 +155,15 @@ If you're using certbot and letsencrypt, you can then get a certificate for your
 
 #### Clock skew
 
-It is **critical** that the Docker container have the correct time, since CoCalc assumes that the server has the correct time.On a laptop running Docker under MacOS, the clock may get messed up any time you suspend/resume your laptop.  This workaround might work for you: https://github.com/arunvelsriram/docker-time-sync-agent/.
+I have tested a lot in November 2021, and did NOT have any problems with clock skew with Docker Desktop, so this appears to be fixed.   If not -- It is **critical** that the Docker container have the correct time, since CoCalc assumes that the server has the correct time.  On a laptop running Docker under MacOS, the clock may get messed up any time you suspend/resume your laptop.  This workaround might work for you: https://github.com/arunvelsriram/docker-time-sync-agent/.  
 
-#### Apple Silicon M1 does **NOT** fully work
+#### Apple Silicon M1 / Linux aarch64/arm64 is fully supported via a different image
 
-There are no apple Silicon binaries yet.  However, assuming you have Rosetta2 installed, the x86\_64 Docker image will _**halfway**_ work. You can start it up, and do many things (e.g., run a Julia kernel in Jupyter).  However **starting Sage fails** as you can see in a terminal:
+I recently created an Apple Silicon Docker image. This runs natively, and does not require Rosetta2.  It may also work on Rasberry Pi or other aarch64 Linux systems.
 
-```sh
-~$ sage
-┌────────────────────────────────────────────────────────────────────┐
-│ SageMath version 9.3, Release Date: 2021-05-09                     │
-│ Using Python 3.8.5. Type "help()" for help.                        │
-└────────────────────────────────────────────────────────────────────┘
-cysignals sigaltstack: Invalid argument
-```
+[https://hub.docker.com/r/sagemathinc/cocalc-aarch64](https://hub.docker.com/r/sagemathinc/cocalc-aarch64?ref=login)
 
-I assume this is an issue with emulation.  If you aren't using Sage this might be OK.   This issue is being tracked [here](https://github.com/sagemathinc/cocalc-docker/issues/100).
-
-#### You CANNOT use Chrome or Safari: you **must** use Firefox
+#### On MacOS, you CANNOT use Chrome or Safari: you **must** use Firefox
 
 Cocalc-docker by default uses a self signed certificate on localhost.  Chrome and Safari won't even let you connect.  However, with Firefox you can click through some warnings and use CoCalc-docker just fine.   So you _**must uses Firefox**_ when running CoCalc-docker locally on MacOS.
 
@@ -355,7 +348,7 @@ After making your main account an admin as above, search for " Registration Toke
 
 ### Public Sharing of Files
 
-By default users are NOT allowed to share files publicly, and the server at your\_server/share is disabled.  You can enable the share server and public file sharing in Admin --&gt; Site Settings --&gt; "Allow public file sharing".   
+By default users are NOT allowed to share files publicly, and the server at your\_server/share is disabled.  You can enable the share server and public file sharing in Admin --&gt; Site Settings --&gt; "Allow public file sharing".
 
 ### Anonymous Accounts
 

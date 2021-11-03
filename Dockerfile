@@ -187,13 +187,32 @@ RUN \
 #  && its --install=global
 
 # Install Julia
-ARG JULIA=1.6.1
+ARG JULIA=1.6.3
 RUN cd /tmp \
- && wget https://julialang-s3.julialang.org/bin/linux/x64/${JULIA%.*}/julia-${JULIA}-linux-x86_64.tar.gz \
- && tar xf julia-${JULIA}-linux-x86_64.tar.gz -C /opt \
- && rm  -f julia-${JULIA}-linux-x86_64.tar.gz \
+ && export ARCH1=`uname -m | sed s/x86_64/x64/` \
+ && export ARCH2=`uname -m` \
+ && wget -q https://julialang-s3.julialang.org/bin/linux/${ARCH1}/${JULIA%.*}/julia-${JULIA}-linux-${ARCH2}.tar.gz \
+ && tar xf julia-${JULIA}-linux-${ARCH2}.tar.gz -C /opt \
+ && rm  -f julia-${JULIA}-linux-${ARCH2}.tar.gz \
  && mv /opt/julia-* /opt/julia \
  && ln -s /opt/julia/bin/julia /usr/local/bin
+
+# Quick test that Julia actually works (i.e., we installed the right binary above).
+RUN echo '2+3' | julia
+
+# Install IJulia kernel
+# I figured out the dierectory /opt/julia/local/share/julia by inspecting the global varaible
+# DEPOT_PATH from within a running Julia session as a normal user, and also reading julia docs:
+#    https://pkgdocs.julialang.org/v1/glossary/
+# It was *incredibly* confusing, and the dozens of discussions of this problem that one finds
+# via Google are all very wrong, incomplete, misleading, etc.  It's truly amazing how 
+# disorganized-wrt-Google information about Julia is, as compared to Node.js and Python. 
+RUN echo 'using Pkg; Pkg.add("IJulia");' | JUPYTER=/usr/local/bin/jupyter JULIA_DEPOT_PATH=/opt/julia/local/share/julia JULIA_PKG=/opt/julia/local/share/julia julia
+RUN mv "$HOME/.local/share/jupyter/kernels/julia"* "/usr/local/share/jupyter/kernels/"
+
+# Also add Pluto system-wide, since we'll likely support it soon in cocalc, and also
+# Nemo and Hecke (some math software).
+RUN echo 'using Pkg; Pkg.add("Pluto"); Pkg.add("Nemo"); Pkg.add("Hecke")' | JULIA_DEPOT_PATH=/opt/julia/local/share/julia JULIA_PKG=/opt/julia/local/share/julia julia
 
 # Install R Jupyter Kernel package into R itself (so R kernel works), and some other packages e.g., rmarkdown which requires reticulate to use Python.
 RUN echo "install.packages(c('repr', 'IRdisplay', 'evaluate', 'crayon', 'pbdZMQ', 'httr', 'devtools', 'uuid', 'digest', 'IRkernel', 'formatR'), repos='https://cloud.r-project.org')" | sage -R --no-save
@@ -237,8 +256,15 @@ RUN umask 022 && pip3 install --upgrade /cocalc/src/smc_pyutil/
 # Install code into Sage
 RUN umask 022 && sage -pip install --upgrade /cocalc/src/smc_sagews/
 
-# Build cocalc itself
-RUN umask 022 && cd /cocalc/src && npm run make
+# Build cocalc itself.
+# Note about .babelrc below --
+#   On aarch64, nextjs is broken as explained at https://nextjs.org/docs/messages/failed-loading-swc and https://github.com/vercel/next.js/discussions/30468, and a workaround is
+#   to disable their new Rust compiler.  This makes the build of next slower, but that's
+#   fine since this is a one-time cost when building cocalc-docker.
+RUN umask 022 \
+  && echo '{"presets": ["next/babel"]}' > /cocalc/src/packages/next/.babelrc \
+  && cd /cocalc/src \
+  && npm run make
 
 # And cleanup npm cache, which is several hundred megabytes after building cocalc above.
 RUN rm -rf /root/.npm
@@ -254,21 +280,6 @@ COPY kernels/ir/Rprofile.site /usr/local/sage/local/lib/R/etc/Rprofile.site
 # Build a UTF-8 locale, so that tmux works -- see https://unix.stackexchange.com/questions/277909/updated-my-arch-linux-server-and-now-i-get-tmux-need-utf-8-locale-lc-ctype-bu
 RUN echo "en_US.UTF-8 UTF-8" > /etc/locale.gen && locale-gen
 
-# Install IJulia kernel
-# I figured out the dierectory /opt/julia/local/share/julia by inspecting the global varaible
-# DEPOT_PATH from within a running Julia session as a normal user, and also reading julia docs:
-#    https://pkgdocs.julialang.org/v1/glossary/
-# It was *incredibly* confusing, and the dozens of discussions of this problem that one finds
-# via Google are all very wrong, incomplete, misleading, etc.  It's truly amazing how 
-# disorganized-wrt-Google information about Julia is, as compared to Node.js and Python. 
-RUN echo 'using Pkg; Pkg.add("IJulia");' | JUPYTER=/usr/local/bin/jupyter JULIA_DEPOT_PATH=/opt/julia/local/share/julia JULIA_PKG=/opt/julia/local/share/julia julia
-RUN mv "$HOME/.local/share/jupyter/kernels/julia"* "/usr/local/share/jupyter/kernels/"
-
-# Also add Pluto system-wide, since we'll likely support it soon in cocalc, and also
-# Nemo and Hecke (some math software).
-RUN echo 'using Pkg; Pkg.add("Pluto"); Pkg.add("Nemo"); Pkg.add("Hecke")' | JULIA_DEPOT_PATH=/opt/julia/local/share/julia JULIA_PKG=/opt/julia/local/share/julia julia
-
-
 # Configuration
 
 COPY login.defs /etc/login.defs
@@ -277,7 +288,7 @@ COPY run.py /root/run.py
 COPY bashrc /root/.bashrc
 
 
-# CoCalc Jupyter widgets
+# CoCalc Jupyter widgets rely on these:
 RUN \
   pip3 install --no-cache-dir ipyleaflet
 

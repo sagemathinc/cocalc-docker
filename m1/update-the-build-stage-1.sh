@@ -1,6 +1,6 @@
 
 set -v
-sudo docker stop cocalc-test
-sudo docker rm cocalc-test
-sudo docker push  sagemathinc/cocalc-aarch64:latest
-sudo docker push  sagemathinc/cocalc-aarch64:`cat current_commit`
+docker stop cocalc-test
+docker rm cocalc-test
+docker push  sagemathinc/cocalc-aarch64:latest
+docker push  sagemathinc/cocalc-aarch64:`cat current_commit`

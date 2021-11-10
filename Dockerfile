@@ -41,6 +41,7 @@ RUN \
        poppler-utils \
        net-tools \
        wget \
+       curl \
        git \
        python3 \
        python \
@@ -85,13 +86,23 @@ RUN \
        octave \
        locales \
        locales-all \
-       postgresql \
-       postgresql-contrib \
        clang-format \
        yapf3 \
        golang \
        r-cran-formatr \
        yasm
+
+# We stick with PostgreSQL 10 for now, to avoid any issues with users having to
+# update to an incompatible version 12.  We don't use postgresql-12 features *yet*,
+# and won't upgrade until we need to or it becomes a security liability.  Note that
+# PostgreSQL 10 is officially supported until November 10, 2022 according to
+# https://www.postgresql.org/support/versioning/
+RUN \
+     sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list' \
+  && wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add - \
+  && apt-get update \
+  && apt-get install -y  postgresql-10
+
 
 # These are specifically packages that we install since building them as
 # part of Sage can be problematic (e.g., on aarch64).  Dima encouraged me
@@ -113,7 +124,7 @@ RUN    adduser --quiet --shell /bin/bash --gecos "Sage user,101,," --disabled-pa
 
 # make source checkout target, then run the install script
 # see https://github.com/docker/docker/issues/9547 for the sync
-# TODO: It used to be that Sage couldn't be built as root, but now it can with 
+# TODO: It used to be that Sage couldn't be built as root, but now it can with
 # a special flag, but we still workaround this below.
 # Here -E inherits the environment from root, however it's important to
 # include -H to set HOME=/home/sage, otherwise DOT_SAGE will not be set
@@ -205,8 +216,8 @@ RUN echo '2+3' | julia
 # DEPOT_PATH from within a running Julia session as a normal user, and also reading julia docs:
 #    https://pkgdocs.julialang.org/v1/glossary/
 # It was *incredibly* confusing, and the dozens of discussions of this problem that one finds
-# via Google are all very wrong, incomplete, misleading, etc.  It's truly amazing how 
-# disorganized-wrt-Google information about Julia is, as compared to Node.js and Python. 
+# via Google are all very wrong, incomplete, misleading, etc.  It's truly amazing how
+# disorganized-wrt-Google information about Julia is, as compared to Node.js and Python.
 RUN echo 'using Pkg; Pkg.add("IJulia");' | JUPYTER=/usr/local/bin/jupyter JULIA_DEPOT_PATH=/opt/julia/local/share/julia JULIA_PKG=/opt/julia/local/share/julia julia
 RUN mv "$HOME/.local/share/jupyter/kernels/julia"* "/usr/local/share/jupyter/kernels/"
 
@@ -221,7 +232,7 @@ RUN echo "install.packages(c('repr', 'IRdisplay', 'evaluate', 'crayon', 'pbdZMQ'
 # Xpra backend support -- we have to use the debs from xpra.org,
 RUN \
      apt-get update \
-  && DEBIAN_FRONTEND=noninteractive apt-get install -y xvfb xsel websockify curl xpra
+  && DEBIAN_FRONTEND=noninteractive apt-get install -y xvfb xsel websockify xpra
 
 # X11 apps to make x11 support useful.
 RUN \
@@ -255,19 +266,6 @@ RUN umask 022 && pip3 install --upgrade /cocalc/src/smc_pyutil/
 
 # Install code into Sage
 RUN umask 022 && sage -pip install --upgrade /cocalc/src/smc_sagews/
-
-# Build cocalc itself.
-# Note about .babelrc below --
-#   On aarch64, nextjs is broken as explained at https://nextjs.org/docs/messages/failed-loading-swc and https://github.com/vercel/next.js/discussions/30468, and a workaround is
-#   to disable their new Rust compiler.  This makes the build of next slower, but that's
-#   fine since this is a one-time cost when building cocalc-docker.
-RUN umask 022 \
-  && echo '{"presets": ["next/babel"]}' > /cocalc/src/packages/next/.babelrc \
-  && cd /cocalc/src \
-  && npm run make
-
-# And cleanup npm cache, which is several hundred megabytes after building cocalc above.
-RUN rm -rf /root/.npm
 
 RUN echo "umask 077" >> /etc/bash.bashrc
 
@@ -308,16 +306,18 @@ RUN ln -sf /usr/bin/yapf3 /usr/bin/yapf
 RUN \
   pip3 install --upgrade --no-cache-dir  pandas plotly scipy  scikit-learn seaborn bokeh zmq
 
-# We stick with PostgreSQL 10 for now, to avoid any issues with users having to
-# update to an incompatible version 12.  We don't use postgresql-12 features *yet*,
-# and won't upgrade until we need to or it becomes a security liability.  Note that
-# PostgreSQL 10 is officially supported until November 10, 2022 according to
-# https://www.postgresql.org/support/versioning/
-RUN \
-     sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list' \
-  && wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add - \
-  && apt-get update \
-  && apt-get install -y  postgresql-10
+# Build cocalc itself.
+# Note about .babelrc below --
+#   On aarch64, nextjs is broken as explained at https://nextjs.org/docs/messages/failed-loading-swc and https://github.com/vercel/next.js/discussions/30468, and a workaround is
+#   to disable their new Rust compiler.  This makes the build of next slower, but that's
+#   fine since this is a one-time cost when building cocalc-docker.
+RUN umask 022 \
+  && echo '{"presets": ["next/babel"]}' > /cocalc/src/packages/next/.babelrc \
+  && cd /cocalc/src \
+  && npm run make
+
+# And cleanup npm cache, which is several hundred megabytes after building cocalc above.
+RUN rm -rf /root/.npm
 
 CMD /root/run.py
 

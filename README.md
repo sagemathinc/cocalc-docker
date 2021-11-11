@@ -4,7 +4,7 @@ GitHub: https://github.com/sagemathinc/cocalc-docker
 
 **Quickstart on a Linux server**
 
-1. Make sure you have at least **20GB disk space free and Docker installed.**
+1. Make sure you have at least **25GB disk space free and Docker installed.**
 2. Run
 
 ```sh
@@ -45,7 +45,7 @@ wait a few minutes for the image to pull, decompress and the container to start,
 
 NOTES:
 
-- This Docker image only supports 64-bit Intel.  For ARM aarch64 (e.g., Apple Silicon) just replace sagemathinc/cocalc above by sagemathinc/cocalc-aarch64. 
+- This Docker image only supports 64-bit Intel.  For ARM aarch64 (e.g., Apple Silicon) just replace sagemathinc/cocalc above by sagemathinc/cocalc-aarch64.
 
 - If you get an error about the Docker daemon, instead run `sudo docker ...`.
 
@@ -155,7 +155,7 @@ If you're using certbot and letsencrypt, you can then get a certificate for your
 
 #### Clock skew
 
-I have tested a lot in November 2021, and did NOT have any problems with clock skew with Docker Desktop, so this appears to be fixed.   If not -- It is **critical** that the Docker container have the correct time, since CoCalc assumes that the server has the correct time.  On a laptop running Docker under MacOS, the clock may get messed up any time you suspend/resume your laptop.  This workaround might work for you: https://github.com/arunvelsriram/docker-time-sync-agent/.  
+I have tested a lot in November 2021, and did NOT have any problems with clock skew with Docker Desktop, so this appears to be fixed.   If not -- It is **critical** that the Docker container have the correct time, since CoCalc assumes that the server has the correct time.  On a laptop running Docker under MacOS, the clock may get messed up any time you suspend/resume your laptop.  This workaround might work for you: https://github.com/arunvelsriram/docker-time-sync-agent/.
 
 #### Apple Silicon M1 / Linux aarch64/arm64 is fully supported via a different image
 
@@ -163,9 +163,13 @@ I recently created an Apple Silicon Docker image. This runs natively, and does n
 
 [https://hub.docker.com/r/sagemathinc/cocalc-aarch64](https://hub.docker.com/r/sagemathinc/cocalc-aarch64?ref=login)
 
-#### On MacOS, you CANNOT use Chrome or Safari: you **must** use Firefox
+#### Browser Issues with MacOS
 
-Cocalc-docker by default uses a self signed certificate on localhost.  Chrome and Safari won't even let you connect.  However, with Firefox you can click through some warnings and use CoCalc-docker just fine.   So you _**must uses Firefox**_ when running CoCalc-docker locally on MacOS.
+Cocalc-docker by default uses a self signed certificate on localhost.  Chrome and Safari won't even let you connect _**by default**_.  
+
+- With Firefox you can click through some warnings and use CoCalc-docker just fine. 
+- With Chrome, you can [use the workaround here](https://stackoverflow.com/questions/35531347/localhost-blocked-on-chrome-with-privacy-error), which involves visiting `chrome://flags/#allow-insecure-localhost` .  
+- I don't know any way to use Safari and CoCalc on MacOS.
 
 ### Chromebook
 

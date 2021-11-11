@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-set -ev
+set -v
 sudo docker stop cocalc-test
 sudo docker rm cocalc-test
 sudo docker push  sagemathinc/cocalc:latest

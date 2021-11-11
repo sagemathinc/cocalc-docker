@@ -307,12 +307,7 @@ RUN \
   pip3 install --upgrade --no-cache-dir  pandas plotly scipy  scikit-learn seaborn bokeh zmq
 
 # Build cocalc itself.
-# Note about .babelrc below --
-#   On aarch64, nextjs is broken as explained at https://nextjs.org/docs/messages/failed-loading-swc and https://github.com/vercel/next.js/discussions/30468, and a workaround is
-#   to disable their new Rust compiler.  This makes the build of next slower, but that's
-#   fine since this is a one-time cost when building cocalc-docker.
 RUN umask 022 \
-  && echo '{"presets": ["next/babel"]}' > /cocalc/src/packages/next/.babelrc \
   && cd /cocalc/src \
   && npm run make
 

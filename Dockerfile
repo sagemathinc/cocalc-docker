@@ -241,6 +241,18 @@ RUN \
      vim-gtk lyx libreoffice inkscape gimp firefox texstudio evince mesa-utils \
      xdotool xclip x11-xkb-utils
 
+# chromium-browser is used in headless mode for printing Jupyter notebooks.
+# However, Ubuntu doesn't support installing it anymore except via a "snap" package,
+# and snap packages do NOT work at all with Docker!?  WTF?  Thus we install a third party,
+# as recommended here: https://askubuntu.com/questions/1204571/how-to-install-chromium-without-snap
+# Also, note that official google-chrome binaries don't exist for ARM 64-bit,
+# so that's not an option.  Also, the chromium-browser package by default
+# in Ubuntu is just a tiny wrapper that says "use our snap".
+RUN \
+    add-apt-repository -y ppa:saiarcot895/chromium-beta \
+ && apt update \
+ && DEBIAN_FRONTEND=noninteractive apt install -y chromium-browser
+
 # VSCode code-server web application
 # See https://github.com/cdr/code-server/releases for VERSION.
 RUN \

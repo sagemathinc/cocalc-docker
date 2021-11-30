@@ -165,11 +165,11 @@ I recently created an Apple Silicon Docker image. This runs natively, and does n
 
 #### Browser Issues with MacOS
 
-Cocalc-docker by default uses a self signed certificate on localhost.  Chrome and Safari won't even let you connect _**by default**_.  
+Cocalc-docker by default uses a self signed certificate on localhost.
 
-- With Firefox you can click through some warnings and use CoCalc-docker just fine. 
-- With Chrome, you can [use the workaround here](https://stackoverflow.com/questions/35531347/localhost-blocked-on-chrome-with-privacy-error), which involves visiting `chrome://flags/#allow-insecure-localhost` .  
-- I don't know any way to use Safari and CoCalc on MacOS.
+- **Firefox -- works fine:** With Firefox you can click through some warnings and use CoCalc-docker just fine.
+- **Chrome -- does NOT work:** With Chrome, you can try to [use the workaround here](https://stackoverflow.com/questions/35531347/localhost-blocked-on-chrome-with-privacy-error), which involves visiting `chrome://flags/#allow-insecure-localhost` , but I've found that the websocket connection to the project is still blocked.
+- **Safari -- works fine:** With current Safari, you can click through to "accept the risks", and it works really well.
 
 ### Chromebook
 

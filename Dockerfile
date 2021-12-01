@@ -259,11 +259,11 @@ RUN \
 # VSCode code-server web application
 # See https://github.com/cdr/code-server/releases for VERSION.
 RUN \
-     export VERSION=3.11.0 \
-  && curl -fOL https://github.com/cdr/code-server/releases/download/v$VERSION/code-server_"$VERSION"_amd64.deb \
-  && dpkg -i code-server_"$VERSION"_amd64.deb \
-  && rm code-server_"$VERSION"_amd64.deb
-
+     export VERSION=3.12.0 \
+   && export ARCH=`uname -m | sed s/aarch64/arm64/ | sed s/x86_64/amd64/` \
+   && curl -fOL https://github.com/cdr/code-server/releases/download/v$VERSION/code-server_"$VERSION"_"$ARCH".deb \
+   && dpkg -i code-server_"$VERSION"_"$ARCH".deb \
+   && rm code-server_"$VERSION"_"$ARCH".deb 
 
 # Commit to checkout and build.
 ARG BRANCH=master

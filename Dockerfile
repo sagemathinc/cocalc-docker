@@ -201,7 +201,7 @@ RUN \
 #  && its --install=global
 
 # Install Julia
-ARG JULIA=1.6.1
+ARG JULIA=1.6.3
 RUN cd /tmp \
  && wget https://julialang-s3.julialang.org/bin/linux/x64/${JULIA%.*}/julia-${JULIA}-linux-x86_64.tar.gz \
  && tar xf julia-${JULIA}-linux-x86_64.tar.gz -C /opt \

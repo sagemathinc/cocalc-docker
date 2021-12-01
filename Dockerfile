@@ -203,11 +203,30 @@ RUN \
 # Install Julia
 ARG JULIA=1.6.3
 RUN cd /tmp \
- && wget https://julialang-s3.julialang.org/bin/linux/x64/${JULIA%.*}/julia-${JULIA}-linux-x86_64.tar.gz \
- && tar xf julia-${JULIA}-linux-x86_64.tar.gz -C /opt \
- && rm  -f julia-${JULIA}-linux-x86_64.tar.gz \
- && mv /opt/julia-* /opt/julia \
+ && export ARCH1=`uname -m | sed s/x86_64/x64/` \
+ && export ARCH2=`uname -m` \
+ && wget -q https://julialang-s3.julialang.org/bin/linux/${ARCH1}/${JULIA%.*}/julia-${JULIA}-linux-${ARCH2}.tar.gz \
+ && tar xf julia-${JULIA}-linux-${ARCH2}.tar.gz -C /opt \
+ && rm  -f julia-${JULIA}-linux-${ARCH2}.tar.gz \  && mv /opt/julia-* /opt/julia \
  && ln -s /opt/julia/bin/julia /usr/local/bin
+
+ # Quick test that Julia actually works (i.e., we installed the right binary above).
+RUN echo '2+3' | julia
+
+# Install IJulia kernel
+# I figured out the dierectory /opt/julia/local/share/julia by inspecting the global varaible
+# DEPOT_PATH from within a running Julia session as a normal user, and also reading julia docs:
+#    https://pkgdocs.julialang.org/v1/glossary/
+# It was *incredibly* confusing, and the dozens of discussions of this problem that one finds
+# via Google are all very wrong, incomplete, misleading, etc.  It's truly amazing how
+# disorganized-wrt-Google information about Julia is, as compared to Node.js and Python.
+RUN echo 'using Pkg; Pkg.add("IJulia");' | JUPYTER=/usr/local/bin/jupyter JULIA_DEPOT_PATH=/opt/julia/local/share/julia JULIA_PKG=/opt/julia/local/share/julia julia
+RUN mv "$HOME/.local/share/jupyter/kernels/julia"* "/usr/local/share/jupyter/kernels/"
+
+# Also add Pluto system-wide, since we'll likely support it soon in cocalc, and also
+# Nemo and Hecke (some math software).
+RUN echo 'using Pkg; Pkg.add("Pluto"); Pkg.add("Nemo"); Pkg.add("Hecke")' | JULIA_DEPOT_PATH=/opt/julia/local/share/julia JULIA_PKG=/opt/julia/local/share/julia julia
+
 
 # Install R Jupyter Kernel package into R itself (so R kernel works), and some other packages e.g., rmarkdown which requires reticulate to use Python.
 RUN echo "install.packages(c('repr', 'IRdisplay', 'evaluate', 'crayon', 'pbdZMQ', 'httr', 'devtools', 'uuid', 'digest', 'IRkernel', 'formatR'), repos='https://cloud.r-project.org')" | sage -R --no-save

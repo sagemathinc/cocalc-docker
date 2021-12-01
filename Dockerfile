@@ -322,16 +322,13 @@ RUN ln -sf /usr/bin/yapf3 /usr/bin/yapf
 RUN \
   pip3 install --upgrade --no-cache-dir  pandas plotly scipy  scikit-learn seaborn bokeh zmq
 
-# We stick with PostgreSQL 10 for now, to avoid any issues with users having to
-# update to an incompatible version 12.  We don't use postgresql-12 features *yet*,
-# and won't upgrade until we need to or it becomes a security liability.  Note that
-# PostgreSQL 10 is officially supported until November 10, 2022 according to
-# https://www.postgresql.org/support/versioning/
-RUN \
-     sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list' \
-  && wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add - \
-  && apt-get update \
-  && apt-get install -y  postgresql-10
+ # Build cocalc itself.
+RUN umask 022 \
+  && cd /cocalc/src \
+  && npm run make
+
+# And cleanup npm cache, which is several hundred megabytes after building cocalc above.
+RUN rm -rf /root/.npm 
 
 CMD /root/run.py
 

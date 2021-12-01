@@ -1,5 +1,0 @@
-{
-    "argv":["sage", "--python", "-m", "PARIKernel", "-f", "{connection_file}"],
-    "display_name":"PARI/GP",
-    "language":"GP"
-}

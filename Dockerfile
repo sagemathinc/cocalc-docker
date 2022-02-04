@@ -131,7 +131,7 @@ RUN    adduser --quiet --shell /bin/bash --gecos "Sage user,101,," --disabled-pa
 # correctly and the build will fail!
 RUN    mkdir -p /usr/local/sage \
     && chown -R sage:sage /usr/local/sage \
-    && sudo -H -E -u sage /usr/sage-install-scripts/install_sage.sh /usr/local/ 9.5.beta9 \
+    && sudo -H -E -u sage /usr/sage-install-scripts/install_sage.sh /usr/local/ 9.5 \
     && sync
 
 RUN /usr/sage-install-scripts/post_install_sage.sh /usr/local/ && rm -rf /tmp/* && sync
@@ -149,7 +149,7 @@ RUN rm -rf /usr/local/sage/build/pkgs/sagelib/src/build
 
 # Important: do not try to install these directly from pypi, since usually (and strangely?)
 # what is posted to Pypi is broken.  Yes, I learned the hard way.
-RUN apt-get install -y python3-yaml   python3-matplotlib  python3-jupyter*  python3-ipywidgets jupyter
+RUN apt-get update && apt-get install -y python3-yaml   python3-matplotlib  python3-jupyter*  python3-ipywidgets jupyter
 
 # install the Octave kernel.
 # NOTE: we delete the spec file and use our own spec for the octave kernel, since the

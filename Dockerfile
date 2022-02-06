@@ -1,4 +1,5 @@
-FROM ubuntu:20.04
+ARG MYAPP_IMAGE=ubuntu:20.04
+FROM $MYAPP_IMAGE
 
 MAINTAINER William Stein <wstein@sagemath.com>
 

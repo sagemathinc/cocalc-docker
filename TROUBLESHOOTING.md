@@ -62,7 +62,7 @@ total 200
 
 On successful startup, the file `/varlog/hub/log` will have contents that ends something like this: 
 
-```
+```sh
 2022-04-20T00:03:10.617Z:   cocalc:info:hub starting webserver listening on 0.0.0.0:443 +1s
 2022-04-20T00:03:10.620Z:   cocalc:info:init-http-redirect Creating redirect http://0.0.0.0 --> https://0.0.0.0 +0ms
 2022-04-20T00:03:10.621Z:   cocalc:info:hub initializing primus websocket server +4ms
@@ -81,8 +81,49 @@ On successful startup, the file `/varlog/hub/log` will have contents that ends s
   cocalc:info:hub ***** +16ms
 ```
 
+###
+
+## Development
+
 You can also change any code in `/cocalc/src/,` and generally do development, mostly as explained [here](https://github.com/sagemathinc/cocalc/blob/master/src/README.md), except you need to be root and change code in `/cocalc/src` instead of `~/cocalc/src.`   Also, be sure to do `umask 022.`  
 
 ## The PostgreSQL database
 
 There is also a  PostgreSQL version 10 \(yes, that's old\) database running in cocalc\-docker.  It is setup using a standard system\-wide scripts, with configuration and log in the usual places. The database that the hub uses is determined by the env variables `PGHOST` and `PGUSER`.   In theory, you could set those \(in the Docker command line\) and use a completely different database. The defaults are setup in `/root/run.py`.
+
+You can get a node.js command line with the same functionality as the core database code of CoCalc \(what's implemented in the package `@cocalc/database)` as follows: 
+
+```sh
+> sudo docker exec -it cocalc bash 
+root@f9787faf32f4:/# cd /cocalc/src
+root@f9787faf32f4:/cocalc/src# npm run c
+...
+Welcome to Node.js v14.19.1.
+Type ".help" for more information.
+> /cocalc/src
+Logging debug info to the file "/tmp//log"
+***
+
+Logging to "/tmp/log" via the debug module
+with  DEBUG='cocalc:*'.
+Use   DEBUG_FILE='path' and DEBUG_CONSOLE=[yes|no] to override.
+Using DEBUG='cocalc:*,-cocalc:silly:*' to control log levels.
+
+***
+db -- database
+project('project_id') -- gives back object to control the porject
+delete_account('email@foo.bar')  -- marks an account deleted
+active_students() -- stats about student course projects during the last 30 days
+stripe [account_id] -- update stripe info about user
+
+(press return)
+> 
+
+# Then you can, e.g., update the database schema, which is something that should
+# happen normally when you start up cocalc:
+
+> db.update_schema({cb:console.log})
+undefined
+```
+
+Look at /tmp/log to see any logging output.

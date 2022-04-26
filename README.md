@@ -15,6 +15,10 @@ docker run --name=cocalc -d -v ~/cocalc:/projects -p 443:443 sagemathinc/cocalc
 
 For other operating systems and way more details, see below.  But a quick note, if you are using aarch64 (e.g., Apple Silicon or Rasberry Pi 64-bit), use `sagemathinc/cocalc-aarch64` instead of `sagemathinc/cocalc` for a native binary!
 
+```sh
+docker run --name=cocalc -d -v ~/cocalc:/projects -p 443:443 sagemathinc/cocalc-aarch64
+```
+
 ## What is this?
 
 **Run CoCalc for free for a small group on your own server or laptop!**

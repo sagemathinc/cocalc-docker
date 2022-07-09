@@ -182,7 +182,7 @@ RUN \
   && apt-get install -y aspell-*
 
 RUN \
-     wget -qO- https://deb.nodesource.com/setup_14.x | bash - \
+     wget -qO- https://deb.nodesource.com/setup_16.x | bash - \
   && apt-get install -y nodejs libxml2-dev libxslt-dev \
   && /usr/bin/npm install -g npm
 
@@ -199,7 +199,7 @@ RUN \
 #  && its --install=global
 
 # Install Julia
-ARG JULIA=1.6.3
+ARG JULIA=1.7.3
 RUN cd /tmp \
  && export ARCH1=`uname -m | sed s/x86_64/x64/` \
  && export ARCH2=`uname -m` \
@@ -213,7 +213,7 @@ RUN cd /tmp \
 RUN echo '2+3' | julia
 
 # Install IJulia kernel
-# I figured out the dierectory /opt/julia/local/share/julia by inspecting the global varaible
+# I figured out the directory /opt/julia/local/share/julia by inspecting the global varaible
 # DEPOT_PATH from within a running Julia session as a normal user, and also reading julia docs:
 #    https://pkgdocs.julialang.org/v1/glossary/
 # It was *incredibly* confusing, and the dozens of discussions of this problem that one finds
@@ -301,7 +301,7 @@ RUN ln -sf /usr/bin/yapf3 /usr/bin/yapf
 # Other pip3 packages
 # NOTE: Upgrading zmq is very important, or the Ubuntu version breaks everything..
 RUN \
-  pip3 install --upgrade --no-cache-dir  pandas plotly scipy  scikit-learn seaborn bokeh zmq
+  pip3 install --upgrade --no-cache-dir  pandas plotly scipy  scikit-learn seaborn bokeh zmq k3d
 
 # Commit to checkout and build.
 ARG BRANCH=master

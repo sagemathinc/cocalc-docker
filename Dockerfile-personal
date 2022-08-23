@@ -1,6 +1,9 @@
-###############
+##########################################################################################
 #
-# This is a version of cocalc-docker running in **personal mode**.
+# This is a version of cocalc-docker running in **personal mode**, which is meant for
+# development, personal use, or when you do not need any security features provided by
+# cocalc itself, and can instead rely on whatever is running Docker containers.
+#
 # This removes *all* of the internal cocalc-docker security and isolation functionality;
 # in particular, there's no authentication, SSL, etc.
 # This does not need root at all to run anything, so you can run it in "rootless" mode,
@@ -12,7 +15,21 @@
 # and hence don't require any security or isolation (but be sure your container is
 # only listening on localhost).
 #
-###############
+# This container starts cocalc listening via http on port 5000.
+#
+# To make cocalc appear on port 5123 on your laptop on localhost only (so not exposed to the world):
+#
+#   docker run --name=cocalc-test-personal -d -v ~/cocalc-test-personal:/home/user/cocalc/src/data -p 127.0.0.1:5123:5000 sagemathinc/cocalc-personal
+#
+# The above also stores all persistent data in ~/cocalc-test-personal on your computer.
+# Omit that if you want to use the container in a purely ephemeral way.
+#
+# Also, the log files are in /home/user/logs/.
+#
+# Any user this cocalc can also do "sudo su" to become root... if docker isn't running the
+# container in rootless mode.
+#
+##########################################################################################
 
 ARG MYAPP_IMAGE=ubuntu:22.04
 FROM $MYAPP_IMAGE

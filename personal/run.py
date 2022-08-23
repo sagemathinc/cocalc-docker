@@ -7,7 +7,7 @@ join = os.path.join
 os.chdir("/home/user/cocalc/src")
 
 os.environ['PATH'] = "/usr/lib/postgresql/14/bin/:" + os.environ['PATH']
-os.environ['PGHOST'] = "/home/user/cocalc/src/data/postgres/socket"
+os.environ['PGHOST'] = "/home/user/socket"
 os.environ['PGUSER'] = os.environ['PGDATABASE'] = 'smc'
 
 

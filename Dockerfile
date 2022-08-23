@@ -90,7 +90,6 @@ RUN \
        clang-format \
        yapf3 \
        golang \
-       r-cran-formatr \
        yasm
 
 # We stick with PostgreSQL 10 for now, to avoid any issues with users having to
@@ -104,6 +103,14 @@ RUN \
   && apt-get update \
   && apt-get install -y  postgresql-10
 
+
+# Install the R statistical software.
+# See https://cran.r-project.org/bin/linux/ubuntu/
+RUN \
+     wget -qO- https://cloud.r-project.org/bin/linux/ubuntu/marutter_pubkey.asc | sudo tee -a /etc/apt/trusted.gpg.d/cran_ubuntu_key.asc \
+  && add-apt-repository "deb https://cloud.r-project.org/bin/linux/ubuntu $(lsb_release -cs)-cran40/" \
+  && apt-get update \
+  && apt-get install -y r-base
 
 # These are specifically packages that we install since building them as
 # part of Sage can be problematic (e.g., on aarch64).  Dima encouraged me

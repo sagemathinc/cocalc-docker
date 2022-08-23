@@ -3,7 +3,6 @@ set -ex
 export DOCKER_BUILDKIT=0
 
 docker stop cocalc-lite-test && docker rm cocalc-lite-test
-git pull
 export BRANCH="${BRANCH:-master}"
 echo "BRANCH=$BRANCH"
 commit=`git ls-remote -h https://github.com/sagemathinc/cocalc $BRANCH | awk '{print $1}'`

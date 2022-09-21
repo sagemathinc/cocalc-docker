@@ -106,11 +106,16 @@ RUN \
 
 # Install the R statistical software.
 # See https://cran.r-project.org/bin/linux/ubuntu/
-RUN \
-     wget -qO- https://cloud.r-project.org/bin/linux/ubuntu/marutter_pubkey.asc | sudo tee -a /etc/apt/trusted.gpg.d/cran_ubuntu_key.asc \
-  && add-apt-repository "deb https://cloud.r-project.org/bin/linux/ubuntu $(lsb_release -cs)-cran40/" \
-  && apt-get update \
-  && apt-get install -y r-base
+# This only works on x86_64 and seems not very robust, so we're switching back to 
+# to whatever is officially supported by Ubuntu below.  If somebody needs a custom
+# version of R for cocalc-docker, they can install it themselves, which isn't hard.
+#RUN \
+#     wget -qO- https://cloud.r-project.org/bin/linux/ubuntu/marutter_pubkey.asc | sudo tee -a /etc/apt/trusted.gpg.d/cran_ubuntu_key.asc \
+#  && add-apt-repository "deb https://cloud.r-project.org/bin/linux/ubuntu $(lsb_release -cs)-cran40/" \
+#  && apt-get update \
+#  && apt-get install -y r-base 
+
+RUN apt-get install -y r-base
 
 # These are specifically packages that we install since building them as
 # part of Sage can be problematic (e.g., on aarch64).  Dima encouraged me
@@ -139,7 +144,7 @@ RUN    adduser --quiet --shell /bin/bash --gecos "Sage user,101,," --disabled-pa
 # correctly and the build will fail!
 RUN    mkdir -p /usr/local/sage \
     && chown -R sage:sage /usr/local/sage \
-    && sudo -H -E -u sage /usr/sage-install-scripts/install_sage.sh /usr/local/ 9.6 \
+    && sudo -H -E -u sage /usr/sage-install-scripts/install_sage.sh /usr/local/ 9.7 \
     && sync
 
 RUN /usr/sage-install-scripts/post_install_sage.sh /usr/local/ && rm -rf /tmp/* && sync

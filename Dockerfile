@@ -45,7 +45,7 @@ RUN \
        curl \
        git \
        python3 \
-       python \
+       python2 \
        python3-pip \
        make \
        g++ \

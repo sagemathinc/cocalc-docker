@@ -1,4 +1,4 @@
-ARG MYAPP_IMAGE=ubuntu:20.04
+ARG MYAPP_IMAGE=ubuntu:22.04
 FROM $MYAPP_IMAGE
 
 MAINTAINER William Stein <wstein@sagemath.com>
@@ -105,17 +105,9 @@ RUN \
 
 
 # Install the R statistical software.
-# See https://cran.r-project.org/bin/linux/ubuntu/
-# This only works on x86_64 and seems not very robust, so we're switching back to 
-# to whatever is officially supported by Ubuntu below.  If somebody needs a custom
-# version of R for cocalc-docker, they can install it themselves, which isn't hard.
-#RUN \
-#     wget -qO- https://cloud.r-project.org/bin/linux/ubuntu/marutter_pubkey.asc | sudo tee -a /etc/apt/trusted.gpg.d/cran_ubuntu_key.asc \
-#  && add-apt-repository "deb https://cloud.r-project.org/bin/linux/ubuntu $(lsb_release -cs)-cran40/" \
-#  && apt-get update \
-#  && apt-get install -y r-base 
-
-RUN apt-get install -y r-base
+RUN \
+    apt-get update \
+&& apt-get install -y r-base
 
 # These are specifically packages that we install since building them as
 # part of Sage can be problematic (e.g., on aarch64).  Dima encouraged me
@@ -160,9 +152,13 @@ RUN \
 # Save nearly 5GB -- only do after installing all sage stuff!:
 RUN rm -rf /usr/local/sage/build/pkgs/sagelib/src/build
 
-# Important: do not try to install these directly from pypi, since usually (and strangely?)
-# what is posted to Pypi is broken.  Yes, I learned the hard way.
-RUN apt-get update && apt-get install -y python3-yaml   python3-matplotlib  python3-jupyter*  python3-ipywidgets jupyter
+# Try to install from pypi again to get better control over versions.
+# - ipywidgets<8 is because of https://github.com/sagemathinc/cocalc/issues/6128
+# - jupyter-client<7 is because of https://github.com/sagemathinc/cocalc/issues/5715
+RUN pip3 install pyyaml matplotlib jupyter jupyterlab "ipywidgets<8" "jupyter-client<7"
+
+# The python3 kernel that gets installed is broken, and we don't need it
+RUN rm -rf /usr/local/share/jupyter/kernels/python3
 
 # install the Octave kernel.
 # NOTE: we delete the spec file and use our own spec for the octave kernel, since the
@@ -172,7 +168,8 @@ RUN \
   && rm -rf /usr/local/share/jupyter/kernels/octave
 
 # Pari/GP kernel support
-# Commented out since it doesn't build anymore with newer Sage, evidently...
+# This does build fine, but I'm not sure what it produces or where or how
+# to make it available.
 # RUN sage --pip install pari_jupyter
 
 # Install LEAN proof assistant
@@ -211,7 +208,7 @@ RUN \
 #  && its --install=global
 
 # Install Julia
-ARG JULIA=1.7.3
+ARG JULIA=1.8.1
 RUN cd /tmp \
  && export ARCH1=`uname -m | sed s/x86_64/x64/` \
  && export ARCH2=`uname -m` \

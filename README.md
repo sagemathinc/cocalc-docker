@@ -19,6 +19,8 @@ For other operating systems and way more details, see below.  But a quick note, 
 docker run --name=cocalc -d -v ~/cocalc:/projects -p 443:443 sagemathinc/cocalc-aarch64
 ```
 
+If the above doesn't work due to something else already using port 443 or you wanting to serve cocalc on a different port, you could use `-p 4043:443` instead.  There is extensive Docker documentation online.
+
 ## What is this?
 
 **Run CoCalc for free for a small group on your own server or laptop!**
@@ -69,7 +71,6 @@ NOTES:
   docker run --name=cocalc -d -v ~/cocalc:/projects -v "/etc/timezone:/etc/timezone" -v "/etc/localtime:/etc/localtime" -p 443:443 sagemathinc/cocalc
   ```
 
-
 The above command will first download the image, then start CoCalc, storing your data in the directory `~/cocalc` on your computer. If you want to store your worksheets and edit history elsewhere, change `~/cocalc` to something else.  Once your local CoCalc is running, open your web browser to https://localhost.  (If you are using Microsoft Windows, instead open https://host.docker.internal/.)
 
 The docker container is called `cocalc` and you can refer to the container and use commands like:
@@ -92,19 +93,45 @@ $ docker exec -it cocalc bash
 $ tail -f /var/log/hub.log
 ```
 
-### ~~NEW: Using a custom base path~~
+### Using a custom base path
 
-UPDATE: This feature no longer works.
+If you want cocalc\-docker to serve everything with a custom base path, e.g., at `https://example.com/my/base/path` then you have to do two things.
 
-If you want cocalc-docker to serve everything with a custom base path, e.g., at `https://example.com/my/base/path` set the BASE\_PATH environment variable:
+#### (1) Set the BASE\_PATH environment variable:
 
 ```sh
 docker run -e BASE_PATH=/my/base/path --name=cocalc -d -v ~/cocalc:/projects -p 443:443 sagemathinc/cocalc
 ```
 
-You can change the base without having to change anything inside the image; what base path is used is entirely controlled by that environment variable.
+This sets the base path correctly for most of CoCalc, but not for everything, unfortunately. 
 
-### NEW: Disable idle timeout
+#### \(2\) Rebuild the [next.js](https://nextjs.org/) package
+
+The next package in CoCalc itself is the only thing that hardcodes the basepath.  You have to rebuild it exactly once with the `BASE_PATH` environment variable set, as follows:
+
+```sh
+~/cocalc-docker/aarch64$ docker run -e BASE_PATH=/my/base/path --name=cocalc -d -v ~/cocalc:/projects -p 443:443 sagemathinc/cocalc-aarch64
+034cf17482a467537addd8ef8db0406277a7f76789eac4b03e0535d8e0d9ccfc
+~/cocalc-docker/aarch64$ docker exec -it cocalc bash
+root@034cf17482a4:/# umask 022
+root@034cf17482a4:/# cd /cocalc/src/packages/next
+root@034cf17482a4:/cocalc/src/packages/next# echo $BASE_PATH
+/my/base/path
+root@034cf17482a4:/cocalc/src/packages/next# time npm run build
+real    2m12.900s
+# Expect this to take a LONG TIME, e.g., up to 10 minutes, though it
+# just took 2 minutes on a fast server for me.
+
+Now exit the docker container and restart it to switch to the new version:
+
+~/cocalc-docker/aarch64$ docker stop cocalc; docker start cocalc
+```
+
+Now visit: https://localhost:443/my/base/path/ and it should fully work.
+
+We do much of the development of CoCalc itself on https://cocalc.com using a `BASE_PATH`.  So fortunately `BASE_PATH` functionality does get used frequently.
+
+### Completely disable idle timeout
 
 Projects will stop by default if they are idle for 30 minutes.  Admins can manually increase this for any project.  If you want to completely disable the idle timeout functionality, set the `COCALC_NO_IDLE_TIMEOUT` environment variable.  Note that the user interface will still show an idle timeout -- it's just that it will have no impact.
 
@@ -556,3 +583,4 @@ docker run -it --runtime=nvidia -e NVIDIA_VISIBLE_DEVICES=all   --name=cocalc-gp
 
 - [CuCalc = CUDA + CoCalc Docker container](https://github.com/ktaletsk/CuCalc)
 - [NCT = NVIDIA Container Toolkit](https://github.com/NVIDIA/nvidia-docker)
+

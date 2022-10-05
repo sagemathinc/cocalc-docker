@@ -76,6 +76,7 @@ RUN \
 RUN \
    apt-get update \
 && DEBIAN_FRONTEND=noninteractive apt-get install -y \
+       cmake \
        gfortran \
        dpkg-dev \
        libssl-dev \
@@ -90,7 +91,14 @@ RUN \
        clang-format \
        yapf3 \
        golang \
-       yasm
+       yasm \
+       texinfo \
+       python-is-python3 \
+       autotools-dev \
+       libtool \
+       tcl \
+       vim \
+       zip
 
 # We stick with PostgreSQL 10 for now, to avoid any issues with users having to
 # update to an incompatible version 12.  We don't use postgresql-12 features *yet*,

@@ -48,6 +48,7 @@ RUN \
        python2 \
        python3-pip \
        make \
+       cmake \
        g++ \
        sudo \
        psmisc \

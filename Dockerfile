@@ -242,7 +242,22 @@ RUN mv "$HOME/.local/share/jupyter/kernels/julia"* "/usr/local/share/jupyter/ker
 
 # Also add Pluto system-wide, since we'll likely support it soon in cocalc, and also
 # Nemo and Hecke (some math software).
-RUN echo 'using Pkg; Pkg.add("Pluto"); Pkg.add("Nemo"); Pkg.add("Hecke")' | JULIA_DEPOT_PATH=/opt/julia/local/share/julia JULIA_PKG=/opt/julia/local/share/julia julia
+RUN echo 'using Pkg; Pkg.add("Pluto"); Pkg.add("Nemo"); Pkg.add("Hecke"); Pkg.add("Oscar")' | JULIA_DEPOT_PATH=/opt/julia/local/share/julia JULIA_PKG=/opt/julia/local/share/julia julia
+
+
+
+# Install magma
+# 
+RUN \
+      ln -s /opt/magma/current/magma /usr/local/bin/magma
+
+RUN \
+      ip link add dumdum type dummy && ifconfig dumdum hw ether `/opt/magma/current/magma -d | grep "Valid MAC addresses" -A1 | tail -n1`
+
+# Install magma kernel
+RUN \
+  pip3 install git+https://github.com/edgarcosta/magma_kernel.git
+
 
 # Install R Jupyter Kernel package into R itself (so R kernel works), and some other packages e.g., rmarkdown which requires reticulate to use Python.
 RUN echo "install.packages(c('repr', 'IRdisplay', 'evaluate', 'crayon', 'pbdZMQ', 'httr', 'devtools', 'uuid', 'digest', 'IRkernel', 'formatR'), repos='https://cloud.r-project.org')" | sage -R --no-save

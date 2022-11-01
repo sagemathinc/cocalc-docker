@@ -247,17 +247,20 @@ RUN echo 'using Pkg; Pkg.add("Pluto"); Pkg.add("Nemo"); Pkg.add("Hecke"); Pkg.ad
 
 
 # Install magma
-# 
-RUN \
-      ln -s /opt/magma/current/magma /usr/local/bin/magma
+#
+RUN ln -s /opt/magma/current/magma /usr/local/bin/magma
 
-RUN \
-      ip link add dumdum type dummy && ifconfig dumdum hw ether `/opt/magma/current/magma -d | grep "Valid MAC addresses" -A1 | tail -n1`
+# we add the dummy device at boot
+RUN apt-get install -y iproute2
+
 
 # Install magma kernel
 RUN \
   pip3 install git+https://github.com/edgarcosta/magma_kernel.git
 
+# Install gp/pari kernel
+RUN \
+  pip3 install git+https://github.com/edgarcosta/gp_kernel.git
 
 # Install R Jupyter Kernel package into R itself (so R kernel works), and some other packages e.g., rmarkdown which requires reticulate to use Python.
 RUN echo "install.packages(c('repr', 'IRdisplay', 'evaluate', 'crayon', 'pbdZMQ', 'httr', 'devtools', 'uuid', 'digest', 'IRkernel', 'formatR'), repos='https://cloud.r-project.org')" | sage -R --no-save
@@ -336,6 +339,13 @@ RUN ln -sf /usr/bin/yapf3 /usr/bin/yapf
 RUN \
   pip3 install --upgrade --no-cache-dir  pandas plotly scipy  scikit-learn seaborn bokeh zmq k3d
 
+# LMFDB dependencies
+RUN \
+   wget https://raw.githubusercontent.com/LMFDB/lmfdb/master/requirements.txt -O lmfdbreq.txt \
+   && pip3 install --upgrade --no-cache-dir -r lmfdbreq.txt
+# so we have dig
+RUN apt-get install -y dnsutils
+
 # Commit to checkout and build.
 ARG BRANCH=master
 ARG commit=HEAD
@@ -366,3 +376,4 @@ ARG BUILD_DATE
 LABEL org.label-schema.build-date=$BUILD_DATE
 
 EXPOSE 22 80 443
+

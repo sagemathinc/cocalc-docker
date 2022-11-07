@@ -53,7 +53,9 @@ RUN \
        sudo \
        psmisc \
        rsync \
-       tidy
+       tidy \
+       nano \
+       alpine-pico
 
  RUN \
      apt-get update \
@@ -339,10 +341,6 @@ RUN ln -sf /usr/bin/yapf3 /usr/bin/yapf
 RUN \
   pip3 install --upgrade --no-cache-dir  pandas plotly scipy  scikit-learn seaborn bokeh zmq k3d
 
-# LMFDB dependencies
-RUN \
-   wget https://raw.githubusercontent.com/LMFDB/lmfdb/master/requirements.txt -O lmfdbreq.txt \
-   && pip3 install --upgrade --no-cache-dir -r lmfdbreq.txt
 # so we have dig
 RUN apt-get install -y dnsutils
 
@@ -361,6 +359,11 @@ RUN umask 022 && pip3 install --upgrade /cocalc/src/smc_pyutil/
 
 # Install code into Sage
 RUN umask 022 && sage -pip install --upgrade /cocalc/src/smc_sagews/
+
+# LMFDB dependencies
+RUN umask 022 \
+   && wget https://raw.githubusercontent.com/LMFDB/lmfdb/master/requirements.txt -O lmfdbreq.txt \
+   && sage -pip install --upgrade -r lmfdbreq.txt
 
 # Build cocalc itself.
 RUN umask 022 \

@@ -114,9 +114,13 @@ RUN \
 
 
 # Install the R statistical software.
+# Details from https://cran.r-project.org/bin/linux/ubuntu/
 RUN \
-    apt-get update \
-&& apt-get install -y r-base
+     apt install -y --no-install-recommends software-properties-common dirmngr \
+  && wget -qO- https://cloud.r-project.org/bin/linux/ubuntu/marutter_pubkey.asc \
+   | tee -a /etc/apt/trusted.gpg.d/cran_ubuntu_key.asc \
+  && add-apt-repository "deb https://cloud.r-project.org/bin/linux/ubuntu $(lsb_release -cs)-cran40/" \
+  && apt install -y --no-install-recommends r-base
 
 # These are specifically packages that we install since building them as
 # part of Sage can be problematic (e.g., on aarch64).  Dima encouraged me
@@ -275,7 +279,7 @@ RUN \
 # VSCode code-server web application
 # See https://github.com/cdr/code-server/releases for VERSION.
 RUN \
-     export VERSION=3.12.0 \
+     export VERSION=4.8.3 \
   && export ARCH=`uname -m | sed s/aarch64/arm64/ | sed s/x86_64/amd64/` \
   && curl -fOL https://github.com/cdr/code-server/releases/download/v$VERSION/code-server_"$VERSION"_"$ARCH".deb \
   && dpkg -i code-server_"$VERSION"_"$ARCH".deb \

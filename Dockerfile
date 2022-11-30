@@ -113,14 +113,13 @@ RUN \
   && apt-get install -y  postgresql-10
 
 
-# Install the R statistical software.
-# Details from https://cran.r-project.org/bin/linux/ubuntu/
+# Install the R statistical software.  We do NOT use a custom repo, etc., as
+# suggested https://github.com/sagemathinc/cocalc-docker/pull/169/files because
+# it doesn't work on our supported platforms (e.g., aarch64).  If you need
+# the latest R, please install it yourself.
 RUN \
-     apt install -y --no-install-recommends software-properties-common dirmngr \
-  && wget -qO- https://cloud.r-project.org/bin/linux/ubuntu/marutter_pubkey.asc \
-   | tee -a /etc/apt/trusted.gpg.d/cran_ubuntu_key.asc \
-  && add-apt-repository "deb https://cloud.r-project.org/bin/linux/ubuntu $(lsb_release -cs)-cran40/" \
-  && apt install -y --no-install-recommends r-base
+  apt-get update \
+  && apt-get install -y r-base
 
 # These are specifically packages that we install since building them as
 # part of Sage can be problematic (e.g., on aarch64).  Dima encouraged me
@@ -131,7 +130,7 @@ RUN \
 # be the newest versions of packages from Ubuntu.
 RUN \
    apt-get update \
-&& DEBIAN_FRONTEND=noninteractive apt-get install -y tachyon
+  && DEBIAN_FRONTEND=noninteractive apt-get install -y tachyon
 
 # Build and install Sage -- see https://github.com/sagemath/docker-images
 COPY scripts/ /usr/sage-install-scripts/

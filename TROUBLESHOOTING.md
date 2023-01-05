@@ -34,7 +34,7 @@ root@00f82bad6a5c:/# cd /cocalc/src/packages/hub
 root@00f82bad6a5c:/cocalc/src/packages/hub# pkill -f cocalc-hub-server
 root@00f82bad6a5c:/cocalc/src/packages/hub# ps ax |grep node
     131 pts/0    S+     0:00 grep --color=auto node
-root@00f82bad6a5c:/cocalc/src/packages/hub# npm run  hub-docker-prod
+root@00f82bad6a5c:/cocalc/src/packages/hub# pnpm run  hub-docker-prod
 > @cocalc/hub@1.58.2 hub-docker-prod
 > COCALC_DOCKER=true DEBUG='cocalc:*,-cocalc:silly:*',$DEBUG NODE_OPTIONS=--max_old_space_size=8000 NODE_ENV=production PROJECTS=/projects/[project_id] PORT=443 NODE_OPTIONS=--enable-source-maps npx cocalc-hub-server --mode=multi-user  --all --hostname=0.0.0.0 --https-key=/projects/conf/cert/key.pem --https-cert=/projects/conf/cert/cert.pem
 ***
@@ -50,9 +50,9 @@ designed for a production environment, as it will leak
 memory, and will not scale past a single process.
 ...
 ^Z  (that means I hit control+z)
-[1]+  Stopped                 npm run hub-docker-prod
+[1]+  Stopped                 pnpm run hub-docker-prod
 root@00f82bad6a5c:/cocalc/src/packages/hub# bg
-[1]+ npm run hub-docker-prod &
+[1]+ pnpm run hub-docker-prod &
 root@00f82bad6a5c:/cocalc/src/packages/hub# ls -l /var/log/hub/
 total 200
 -rw------- 1 root root   1129 Apr 20 00:00 err
@@ -127,3 +127,4 @@ undefined
 ```
 
 Look at /tmp/log to see any logging output.
+

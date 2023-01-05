@@ -340,6 +340,10 @@ RUN umask 022 && pip3 install --upgrade /cocalc/src/smc_pyutil/
 # Install code into Sage
 RUN umask 022 && sage -pip install --upgrade /cocalc/src/smc_sagews/
 
+# Install pnpm package manager that we now use instead of npm
+RUN umask 022 \
+  && npm install -g pnpm
+
 # Build cocalc itself.
 RUN umask 022 \
   && cd /cocalc/src \

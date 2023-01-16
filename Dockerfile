@@ -55,7 +55,8 @@ RUN \
        rsync \
        tidy \
        nano \
-       alpine-pico
+       alpine-pico \
+       parallel
 
  RUN \
      apt-get update \

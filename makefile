@@ -12,7 +12,6 @@ ssl:
 
 build-full:
 	docker build --no-cache -t cocalc .
-	mkdir -p $(cocalc-data)
 
 light:
 	docker build -t cocalc-light -f Dockerfile-light .

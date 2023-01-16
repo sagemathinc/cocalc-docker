@@ -1,0 +1,13 @@
+diff --git a/src/packages/util/db-schema/accounts.ts b/src/packages/util/db-schema/accounts.ts
+index 1bde49a..b4fb3f8 100644
+--- a/src/packages/util/db-schema/accounts.ts
++++ b/src/packages/util/db-schema/accounts.ts
+@@ -213,7 +213,7 @@ Table({
+             line_wrapping: true,
+             line_numbers: true,
+             jupyter_line_numbers: false,
+-            smart_indent: true,
++            smart_indent: false,
+             electric_chars: true,
+             match_brackets: true,
+             auto_close_brackets: true,

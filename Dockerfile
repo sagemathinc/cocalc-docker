@@ -352,12 +352,18 @@ RUN apt-get install -y dnsutils
 ARG BRANCH=master
 ARG commit=HEAD
 
+# Patch to disable smart indent
+COPY disable_smart_indent.patch /disable_smart_indent.patch
+
 # Pull latest source code for CoCalc and checkout requested commit (or HEAD),
 # install our Python libraries globally, then remove cocalc.  We only need it
 # for installing these Python libraries (TODO: move to pypi?).
 RUN \
      umask 022 && git clone --depth=1 https://github.com/sagemathinc/cocalc.git \
-  && cd /cocalc && git pull && git fetch -u origin $BRANCH:$BRANCH && git checkout ${commit:-HEAD}
+  && cd /cocalc && git pull && git fetch -u origin $BRANCH:$BRANCH && git checkout ${commit:-HEAD} \
+  && git apply /disable_smart_indent.patch
+
+
 
 RUN umask 022 && pip3 install --upgrade /cocalc/src/smc_pyutil/
 

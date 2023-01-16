@@ -69,6 +69,8 @@ RUN \
   && apt-get install -y nodejs libxml2-dev libxslt-dev \
   && /usr/bin/npm install -g npm
 
+# Install pnpm package manager that we now use instead of npm
+RUN umask 022 && npm install -g pnpm
 
 RUN echo "umask 077" >> /etc/bash.bashrc
 

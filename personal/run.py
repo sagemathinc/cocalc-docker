@@ -90,13 +90,13 @@ def reset_project_state():
         "reset_project_state:",
         "ensuring all projects are set as opened (not running) in the database"
     )
-    while True:
-        try:
-            run("""echo "update projects set state='{\\"state\\":\\"opened\\"}';" | psql -t"""
-                )
-            return
-        except:
-            time.sleep(2)
+    try:
+        run("""echo "update projects set state='{\\"state\\":\\"opened\\"}';" | psql -t""")
+    except:
+        # Failure isn't non-fatal, since (1) it will fail if the database isn't done being
+        # created, and also this is just a convenience to reset the states.
+        log("reset_project_state failed (non-fatal)")
+
 
 
 def main():

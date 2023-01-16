@@ -115,10 +115,13 @@ RUN \
   && apt-get install -y  postgresql-10
 
 
-# Install the R statistical software.
+# Install the R statistical software.  We do NOT use a custom repo, etc., as
+# suggested https://github.com/sagemathinc/cocalc-docker/pull/169/files because
+# it doesn't work on our supported platforms (e.g., aarch64).  If you need
+# the latest R, please install it yourself.
 RUN \
-    apt-get update \
-&& apt-get install -y r-base
+  apt-get update \
+  && apt-get install -y r-base
 
 # These are specifically packages that we install since building them as
 # part of Sage can be problematic (e.g., on aarch64).  Dima encouraged me
@@ -129,7 +132,7 @@ RUN \
 # be the newest versions of packages from Ubuntu.
 RUN \
    apt-get update \
-&& DEBIAN_FRONTEND=noninteractive apt-get install -y tachyon
+  && DEBIAN_FRONTEND=noninteractive apt-get install -y tachyon
 
 # Build and install Sage -- see https://github.com/sagemath/docker-images
 COPY scripts/ /usr/sage-install-scripts/
@@ -295,7 +298,7 @@ RUN \
 # VSCode code-server web application
 # See https://github.com/cdr/code-server/releases for VERSION.
 RUN \
-     export VERSION=3.12.0 \
+     export VERSION=4.8.3 \
   && export ARCH=`uname -m | sed s/aarch64/arm64/ | sed s/x86_64/amd64/` \
   && curl -fOL https://github.com/cdr/code-server/releases/download/v$VERSION/code-server_"$VERSION"_"$ARCH".deb \
   && dpkg -i code-server_"$VERSION"_"$ARCH".deb \
@@ -364,6 +367,10 @@ RUN umask 022 && sage -pip install --upgrade /cocalc/src/smc_sagews/
 RUN umask 022 \
    && wget https://raw.githubusercontent.com/LMFDB/lmfdb/master/requirements.txt -O lmfdbreq.txt \
    && sage -pip install --upgrade -r lmfdbreq.txt
+
+# Install pnpm package manager that we now use instead of npm
+RUN umask 022 \
+  && npm install -g pnpm
 
 # Build cocalc itself.
 RUN umask 022 \

@@ -124,7 +124,7 @@ def start_hub():
     log("start_hub")
     kill("cocalc-hub-server")
     # NOTE: there's automatic logging to files that rotate as they get bigger...
-    run("mkdir -p /var/log/hub && cd /cocalc/src/packages/hub && npm run hub-docker-prod > /var/log/hub/out 2>/var/log/hub/err &")
+    run("mkdir -p /var/log/hub && cd /cocalc/src/packages/hub && pnpm run hub-docker-prod > /var/log/hub/out 2>/var/log/hub/err &")
 
 def postgres_perms():
     log("postgres_perms: ensuring postgres directory perms are sufficiently restrictive"
@@ -168,13 +168,12 @@ def reset_project_state():
         "reset_project_state:",
         "ensuring all projects are set as opened (not running) in the database"
     )
-    while True:
-        try:
-            run("""echo "update projects set state='{\\"state\\":\\"opened\\"}';" | psql -t"""
-                )
-            return
-        except:
-            time.sleep(1)
+    try:
+        run("""echo "update projects set state='{\\"state\\":\\"opened\\"}';" | psql -t""")
+    except:
+        # Failure isn't non-fatal, since (1) it will fail if the database isn't done being
+        # created, and also this is just a convenience to reset the states.
+        log("reset_project_state failed (non-fatal)")
 
 
 

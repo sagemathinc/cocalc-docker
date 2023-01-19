@@ -77,7 +77,7 @@ def start_hub():
     log("start_hub")
     kill("cocalc-hub-server")
     # PORT here must match what is exposed in the Dockerfile-personal
-    run("mkdir -p /home/user/logs/ && cd packages/hub/ && unset DATA COCALC_ROOT BASE_PATH && PORT=5000 DEBUG='cocalc:*,-cocalc:silly:*',$DEBUG NODE_ENV=production NODE_OPTIONS='--max_old_space_size=16000' npx cocalc-hub-server --mode=single-user --all --hostname=0.0.0.0 --personal > /home/user/logs/cocalc.out 2>/home/user/logs/cocalc.err &"
+    run("mkdir -p /home/user/logs/ && cd packages/hub/ && unset DATA COCALC_ROOT BASE_PATH && PORT=5000 DEBUG='cocalc:*,-cocalc:silly:*',$DEBUG NODE_ENV=production NODE_OPTIONS='--max_old_space_size=16000' pnpm exec cocalc-hub-server --mode=single-user --all --hostname=0.0.0.0 --personal > /home/user/logs/cocalc.out 2>/home/user/logs/cocalc.err &"
         )
 
 

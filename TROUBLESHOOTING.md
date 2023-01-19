@@ -22,7 +22,7 @@ You can find the process via `pgrep -af cocalc-hub-server`:
 
 ```sh
 root@367b9eb05898> pgrep -af cocalc-hub-server
-4717 npm exec cocalc-hub-server --websocket-server --proxy-server --share-server --host=0.0.0.0 --https-key=/projects/conf/cert/key.pem --https-cert=/projects/conf/cert/cert.pem         
+4717 pnpm exec cocalc-hub-server --websocket-server --proxy-server --share-server --host=0.0.0.0 --https-key=/projects/conf/cert/key.pem --https-cert=/projects/conf/cert/cert.pem         
 4729 node /cocalc/src/smc-hub/node_modules/.bin/cocalc-hub-server --websocket-server --proxy-server --share-server --host=0.0.0.0 --https-key=/projects/conf/cert/key.pem --https-cert=/projects/conf/cert/cert.pem
 ```
 
@@ -36,7 +36,7 @@ root@00f82bad6a5c:/cocalc/src/packages/hub# ps ax |grep node
     131 pts/0    S+     0:00 grep --color=auto node
 root@00f82bad6a5c:/cocalc/src/packages/hub# pnpm run  hub-docker-prod
 > @cocalc/hub@1.58.2 hub-docker-prod
-> COCALC_DOCKER=true DEBUG='cocalc:*,-cocalc:silly:*',$DEBUG NODE_OPTIONS=--max_old_space_size=8000 NODE_ENV=production PROJECTS=/projects/[project_id] PORT=443 NODE_OPTIONS=--enable-source-maps npx cocalc-hub-server --mode=multi-user  --all --hostname=0.0.0.0 --https-key=/projects/conf/cert/key.pem --https-cert=/projects/conf/cert/cert.pem
+> COCALC_DOCKER=true DEBUG='cocalc:*,-cocalc:silly:*',$DEBUG NODE_OPTIONS=--max_old_space_size=8000 NODE_ENV=production PROJECTS=/projects/[project_id] PORT=443 NODE_OPTIONS=--enable-source-maps pnpm exec cocalc-hub-server --mode=multi-user  --all --hostname=0.0.0.0 --https-key=/projects/conf/cert/key.pem --https-cert=/projects/conf/cert/cert.pem
 ***
 Logging to "/var/log/hub/log" via the debug module
 with  DEBUG='cocalc:*,-cocalc:silly:*,'.

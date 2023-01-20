@@ -7,11 +7,20 @@ join = os.path.join
 os.chdir("/home/user/cocalc/src")
 
 os.environ['PATH'] = "/usr/lib/postgresql/14/bin/:" + os.environ['PATH']
-os.environ['PGHOST'] = "/home/user/socket"
-if not os.path.exists(os.environ['PGHOST']):
-    os.makedirs(os.environ['PGHOST'])
-os.environ['PGUSER'] = os.environ['PGDATABASE'] = 'smc'
 
+# We only set these environment variables if they are not already set.
+if 'PGHOST' not in os.environ:
+    local_database = True
+    os.environ['PGHOST'] = "/home/user/socket"
+    if not os.path.exists(os.environ['PGHOST']):
+        os.makedirs(os.environ['PGHOST'])
+else:
+    local_database = False
+
+if 'PGUSER' not in os.environ:
+    os.environ['PGUSER'] = 'smc'
+if 'PGDATABASE' not in os.environ:
+    os.environ['PGDATABASE'] = 'smc'
 
 def log(*args):
     print("LOG:", *args)
@@ -83,6 +92,12 @@ def start_hub():
 
 def start_postgres():
     log("start_postgres")
+    log("start_postgres")
+    for var in ['PGHOST', 'PGUSER', 'PGDATABASE']:
+        log("start_postgres: %s=%s"%(var, os.environ[var]))
+    if not local_database:
+        log("start_postgres -- using external database so nothing to do")
+        return
     run("mkdir -p /home/user/logs/ && cd /home/user/cocalc/src && npm run database > /home/user/logs/postgres.out 2>/home/user/logs/postgres.err & "
         )
 

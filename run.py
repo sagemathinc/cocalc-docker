@@ -1,18 +1,27 @@
 #!/usr/bin/env python3
 
+# NOTE: There is a simpler different variant of this script in the personal/ subdirectory.
+
 import os, tempfile, time, shutil, subprocess, sys
 
-# Where the PostgreSQL data is stored
-PGDATA = '/projects/postgres/data'
-PGHOST = os.path.join(PGDATA, 'socket')
 
 # Only actually set the vars in case they aren't already set.
 # This makes it possible for users to use a custom remote PostgreSQL
-# server if they want...
+# server if they want.
 if 'PGHOST' not in os.environ:
+    local_database = True
+    # Where the PostgreSQL data is stored
+    PGDATA = '/projects/postgres/data'
+    PGHOST = os.path.join(PGDATA, 'socket')
     os.environ['PGHOST'] = PGHOST
+else:
+    local_database = False
+
 if 'PGUSER' not in os.environ:
     os.environ['PGUSER'] = 'smc'
+
+if 'PGDATABASE' not in os.environ:
+    os.environ['PGDATABASE'] = 'smc'
 
 # ensure that everything we spawn has this umask, which is more secure.
 os.umask(0o077)
@@ -131,6 +140,12 @@ def postgres_perms():
 
 def start_postgres():
     log("start_postgres")
+    for var in ['PGHOST', 'PGUSER', 'PGDATABASE']:
+        log("start_postgres: %s=%s"%(var, os.environ[var]))
+    if not local_database:
+        log("start_postgres -- using external database so nothing to do")
+        return
+    log("start_postgres -- using local database")
     postgres_perms()
     if not os.path.exists(
             PGDATA):  # see comments in smc/src/dev/project/start_postgres.py

@@ -1,4 +1,4 @@
-ARG MYAPP_IMAGE=ubuntu:20.04
+ARG MYAPP_IMAGE=ubuntu:22.04
 FROM $MYAPP_IMAGE
 
 MAINTAINER William Stein <wstein@sagemath.com>
@@ -30,7 +30,7 @@ RUN \
        curl \
        git \
        python3 \
-       python \
+       python-is-python3 \
        python3-pip \
        make \
        g++ \
@@ -52,7 +52,6 @@ RUN \
        automake \
        jq
 
-
 # We stick with PostgreSQL 10 for now, to avoid any issues with users having to
 # update to an incompatible version 12.  We don't use postgresql-12 features *yet*,
 # and won't upgrade until we need to or it becomes a security liability.  Note that
@@ -67,10 +66,7 @@ RUN \
 RUN \
      wget -qO- https://deb.nodesource.com/setup_16.x | bash - \
   && apt-get install -y nodejs libxml2-dev libxslt-dev \
-  && /usr/bin/npm install -g npm
-
-# Install pnpm package manager that we now use instead of npm
-RUN umask 022 && npm install -g pnpm
+  && /usr/bin/npm install -g npm pnpm
 
 RUN echo "umask 077" >> /etc/bash.bashrc
 

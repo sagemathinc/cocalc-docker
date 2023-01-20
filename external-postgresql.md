@@ -76,7 +76,7 @@ Put the password in the data directory for our server:
 Now create cocalc\-docker or cocalc\-lite as follows, noting where we mount the data directory.  You can change 5123 to something elese below if you already have something using that port:
 
 ```sh
-~ $ docker run --name=cocalc-lite-extdb -e PGHOST=172.17.0.4 -e PGUSER=cocalc -e PGDATABASE=cocalc  -d -p 127.0.0.1:5123:5000 -v  ~/cocalc-extdb:/projects sagemathinc/cocalc-lite-aarch64
+~ $ docker run --name=cocalc-lite-extdb -e PGHOST=172.17.0.4 -e PGUSER=cocalc -e PGDATABASE=cocalc  -d -p 127.0.0.1:5123:443 -v  ~/cocalc-extdb:/projects sagemathinc/cocalc-lite-aarch64
 ```
 
 Alternatively, create cocalc-personal, again noting that the directory directory is now mounted at /home/user/cocalc/src/data:

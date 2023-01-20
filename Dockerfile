@@ -99,7 +99,8 @@ RUN \
        libtool \
        tcl \
        vim \
-       zip
+       zip \
+       bsdmainutils
 
 # We stick with PostgreSQL 10 for now, to avoid any issues with users having to
 # update to an incompatible version 12.  We don't use postgresql-12 features *yet*,

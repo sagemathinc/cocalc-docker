@@ -50,7 +50,8 @@ RUN \
        libpq-dev \
        build-essential \
        automake \
-       jq
+       jq \
+       bsdmainutils
 
 # We stick with PostgreSQL 10 for now, to avoid any issues with users having to
 # update to an incompatible version 12.  We don't use postgresql-12 features *yet*,

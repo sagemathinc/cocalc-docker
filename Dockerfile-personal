@@ -84,7 +84,8 @@ RUN \
        build-essential \
        automake \
        jq \
-       postgresql
+       postgresql \
+       bsdmainutils
 
 RUN \
      wget -qO- https://deb.nodesource.com/setup_18.x | bash - \

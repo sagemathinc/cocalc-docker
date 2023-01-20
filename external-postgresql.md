@@ -1,21 +1,23 @@
 # Using CoCalc-Docker with an External PostgreSQL Database
 
-By default cocalc-docker runs a PostgreSQL database inside the cocalc-docker container.
+By default, cocalc\-docker runs a PostgreSQL database inside the cocalc\-docker container.
 You can use your own external database with any user and password that you want instead
-by setting some environment variables and a password file when creating the cocalc-docker
-container.  The following tutorial illustrates how to do this.  To make the tutorial
-self contained, we create a standalone docker container just for running PostgreSQL,
-and a separate cocalc-docker container that uses that postgresql container.  However,
-in your case you might point cocalc-docker at some entirely different postgresql server.
+by setting some environment variables and a password file when creating the cocalc\-docker
+container.   In particular, if the environment variable `PGHOST` is set, then cocalc\-docker doesn't start an internal database.
+
+The following tutorial illustrates how to use an external database with cocalc\-docker, cocalc\-lite and cocalc\-personal.  To make the tutorial
+self contained, we create a standalone Docker container just for running PostgreSQL,
+and a separate cocalc\-docker \(etc.\) container that uses that postgresql container.  However, you will likely point cocalc\-docker at some entirely different postgresql server.  The key thing to do is to make sure the following environment variables are set: `PGHOST, PGUSER, PGDATABASE,` and that the database password is mounted so it appears in the file `/projects/secrets/postgres` for cocalc\-docker/cocalc\-lite, and as `/home/user/cocalc/src/data/secrets/postgres` for cocalc\-personal.
 
 ## Tutorial
 
-We create a docker container serving postgresql to port 6000 only
-on our local machine (not the external network).  First create
+### Create the PostgreSQL container
+
+We create a docker container serving postgresql to port 5432. First create
 the container.
 
 ```sh
-~ $ docker run -d --name=postgres -p 127.0.0.1:6000:5432  ubuntu:22.04 sleep infinity
+~ $ docker run -d --name=postgres -p 5432:5432  ubuntu:22.04 sleep infinity
 ~ $ docker exec -it postgres bash
 ```
 
@@ -23,8 +25,7 @@ Next install postgresql and create a cocalc user and cocalc database with "cocal
 
 ```sh
 root@56103ab68131:/# apt update && DEBIAN_FRONTEND=noninteractive  apt install -y postgresql
-root@56103ab68131:/# echo "listen_addresses = '*'" >> /etc/postgresql/14/main/postgresql.conf
-root@56103ab68131:/# echo "host all all 0.0.0.0/0  md5" >> /etc/postgresql/14/main/pg_hba.conf
+root@56103ab68131:/# echo "listen_addresses = '*'" >> /etc/postgresql/14/main/postgresql.conf && echo "host all all 0.0.0.0/0  md5" >> /etc/postgresql/14/main/pg_hba.conf
 root@56103ab68131:/# service postgresql start
 root@56103ab68131:/# su - postgres
 postgres@56103ab68131:~$ psql
@@ -37,6 +38,13 @@ postgres=# create database cocalc;
 CREATE DATABASE
 postgres=# grant all privileges on database cocalc to cocalc;
 GRANT
+
+(exit out of here, hitting control+d a few times)
+postgres@800759595e89:~$ 
+logout
+root@800759595e89:/# 
+exit
+~ $ 
 ```
 
 Next we create a cocalc-personal server that uses the database
@@ -48,7 +56,9 @@ the permissions on this directory ~/cocalc-extdb/secrets/ are
 very restrictive, i.e., root only, so that normal users can't
 read the password.
 
-Get the ip address of the postgres server, which we will use below:
+### Create cocalc\-docker \(or cocalc\-lite or cocalc\-personal\) container
+
+Get the ip address of the postgres server, which we will use below when creating cocalc-docker to tell it where to find postgres:
 
 ```sh
 ~ $ docker inspect postgres | grep IPAddress\"
@@ -56,24 +66,28 @@ Get the ip address of the postgres server, which we will use below:
           "IPAddress": "172.17.0.4",
 ```
 
-For cocalc-docker or cocalc-lite:
+Put the password in the data directory for our server:
 
 ```sh
 ~ $ mkdir -p ~/cocalc-extdb/secrets
 ~ $ echo "cocalc" > ~/cocalc-extdb/secrets/postgres
+```
+
+Now create cocalc\-docker or cocalc\-lite as follows, noting where we mount the data directory.  You can change 5123 to something elese below if you already have something using that port:
+
+```sh
 ~ $ docker run --name=cocalc-lite-extdb -e PGHOST=172.17.0.4 -e PGUSER=cocalc -e PGDATABASE=cocalc  -d -p 127.0.0.1:5123:5000 -v  ~/cocalc-extdb:/projects sagemathinc/cocalc-lite-aarch64
 ```
 
-For cocalc-personal:
+Alternatively, create cocalc-personal, again noting that the directory directory is now mounted at /home/user/cocalc/src/data:
+
 ```sh
-~ $ mkdir -p ~/cocalc-extdb/secrets
-~ $ echo "cocalc" > ~/cocalc-extdb/secrets/postgres
 ~ $ docker run --name=cocalc-personal-extdb -e PGHOST=172.17.0.4 -e PGUSER=cocalc -e PGDATABASE=cocalc  -d -p 127.0.0.1:5123:5000 -v  ~/cocalc-extdb:/home/user/cocalc/src/data/ sagemathinc/cocalc-personal-aarch64
 ```
 
 ## Try it out
 
-Connect to https://localhost:5123 and make an account.  Then get a shell in your database container and confirm that your account is listed in that database!
+Connect to https://localhost:5123 and make an account.  Then get a shell in your database container and confirm that your account is listed in the database!
 
 ```sh
 ~ $ docker exec -it postgres bash

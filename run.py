@@ -4,6 +4,8 @@
 
 import os, tempfile, time, shutil, subprocess, sys
 
+# Where all persistent data is stored.
+DATA = os.environ['DATA'] = '/projects'
 
 # Only actually set the vars in case they aren't already set.
 # This makes it possible for users to use a custom remote PostgreSQL
@@ -11,7 +13,7 @@ import os, tempfile, time, shutil, subprocess, sys
 if 'PGHOST' not in os.environ:
     local_database = True
     # Where the PostgreSQL data is stored
-    PGDATA = '/projects/postgres/data'
+    PGDATA = os.path.join(DATA, 'postgres/data')
     PGHOST = os.path.join(PGDATA, 'socket')
     os.environ['PGHOST'] = PGHOST
 else:
@@ -80,7 +82,7 @@ def kill(c):
 
 def self_signed_cert():
     log("self_signed_cert")
-    target = '/projects/conf/cert'
+    target = join(DATA, 'conf/cert')
     if not os.path.exists(target):
         os.makedirs(target)
     key = os.path.join(target, 'key.pem')
@@ -94,18 +96,18 @@ def self_signed_cert():
         key, '-subj', '/C=US/ST=WA/L=WA/O=Network/OU=IT Department/CN=cocalc'
     ],
         path=target)
-    run("chmod og-rwx /projects/conf")
+    run(f"chmod og-rwx {DATA}/conf")
 
 
 def init_projects_path():
-    log("init_projects_path: initialize /projects path")
-    if not os.path.exists('/projects'):
-        log("WARNING: container data will be EPHEMERAL -- in /projects")
-        os.makedirs('/projects')
+    log(f"init_projects_path: initialize {DATA} path")
+    if not os.path.exists(DATA):
+        log(f"WARNING: container data will be EPHEMERAL -- in {DATA}")
+        os.makedirs(DATA)
     # Ensure that users can see their own home directories:
-    os.system("chmod a+rx /projects")
+    os.system(f"chmod a+rx {DATA}")
     for path in ['conf']:
-        full_path = join('/projects', path)
+        full_path = join(DATA, path)
         if not os.path.exists(full_path):
             log("creating ", full_path)
             os.makedirs(full_path)
@@ -134,7 +136,7 @@ def start_hub():
 def postgres_perms():
     log("postgres_perms: ensuring postgres directory perms are sufficiently restrictive"
         )
-    run("mkdir -p /projects/postgres && chown -R sage. /projects/postgres && chmod og-rwx -R /projects/postgres"
+    run(f"mkdir -p {DATA}/postgres && chown -R sage. {DATA}/postgres && chmod og-rwx -R {DATA}/postgres"
         )
 
 

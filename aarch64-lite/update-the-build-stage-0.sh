@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
+
 docker stop cocalc-lite-test && docker rm cocalc-lite-test
 
 set -ex
-export DOCKER_BUILDKIT=0
 
 export BRANCH="${BRANCH:-master}"
 echo "BRANCH=$BRANCH"

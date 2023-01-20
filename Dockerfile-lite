@@ -61,11 +61,11 @@ RUN \
      sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list' \
   && wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add - \
   && apt-get update \
-  && apt-get install -y  postgresql-10
+  && DEBIAN_FRONTEND=noninteractive apt-get install -y  postgresql-10
 
 RUN \
      wget -qO- https://deb.nodesource.com/setup_16.x | bash - \
-  && apt-get install -y nodejs libxml2-dev libxslt-dev \
+  && DEBIAN_FRONTEND=noninteractive apt-get install -y nodejs libxml2-dev libxslt-dev \
   && /usr/bin/npm install -g npm pnpm
 
 RUN echo "umask 077" >> /etc/bash.bashrc

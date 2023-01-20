@@ -174,18 +174,6 @@ def start_postgres():
         % PGDATA)
 
 
-def reset_project_state():
-    log(
-        "reset_project_state:",
-        "ensuring all projects are set as opened (not running) in the database"
-    )
-    try:
-        run("""echo "update projects set state='{\\"state\\":\\"opened\\"}';" | psql -t""")
-    except:
-        # Failure isn't non-fatal, since (1) it will fail if the database isn't done being
-        # created, and also this is just a convenience to reset the states.
-        log("reset_project_state failed (non-fatal)")
-
 
 
 def main():
@@ -195,9 +183,8 @@ def main():
     start_ssh()
     start_postgres()
     start_hub()
-    reset_project_state()
     while True:
-        log("waiting for all subprocesses to complete...")
+        log("Started services.")
         os.wait()
 
 

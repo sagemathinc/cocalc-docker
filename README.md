@@ -10,6 +10,8 @@ GitHub: https://github.com/sagemathinc/cocalc-docker
 ```sh
 docker run --name=cocalc -d -v ~/cocalc:/projects -p 443:443 sagemathinc/cocalc
 ```
+NOTE: There are also aarch64 images for Apple M1, and a "lite" version that is much smaller because
+it doesn't come with Sage, Latex, etc.  See https://hub.docker.com/u/sagemathinc for a list of images.
 
 3. Wait a few minutes for the image to pull, decompress and the container to start, then visit https://localhost.
 
@@ -190,7 +192,7 @@ I have tested a lot in November 2021, and did NOT have any problems with clock s
 
 #### Apple Silicon M1 / Linux aarch64/arm64 is fully supported via a different image
 
-I recently created an Apple Silicon Docker image. This runs natively, and does not require Rosetta2.  It may also work on Rasberry Pi or other aarch64 Linux systems.
+I regularly post an Apple Silicon Aarch64 cocalc-docker image. This runs natively.  It should also work on other aarch64 Linux systems.
 
 [https://hub.docker.com/r/sagemathinc/cocalc-aarch64](https://hub.docker.com/r/sagemathinc/cocalc-aarch64?ref=login)
 
@@ -435,6 +437,8 @@ be889c14-dc96-4538-989b-4117ffe84148	postgres    conf
 The directory `postgres` contains the database files, so all projects, users, file editing history, etc. The directory conf contains some secrets and log files. There will also be one directory (like `be889c14-dc96-4538-989b-4117ffe84148`) for each project that is created.
 
 ## Upgrade
+
+New images are released regularly, as you can see [on the SageMath, Inc. Dockerhub page](https://hub.docker.com/u/sagemathinc).
 
 To get the newest image, do this (which will take some time):
 

@@ -26,6 +26,12 @@ If the above doesn't work due to something else already using port 443 or you wa
 ```sh
  docker run --name=cocalc -d -v ~/cocalc:/projects -p 7100:443 sagemathinc/cocalc-lite-aarch64
  ```
+ 
+## Connecting to https://localhost:...
+
+The default cocalc-docker container of course has only a self-signed ssl certificate.  Browsers have cracked down more and more on allowing
+connections to such servers.   Because cocalc-docker is serving on localhost, you can explicitly tell your browser to allow the connection.
+Do a Google search for "chrome allow localhost https" to find out how; one result is https://communicode.io/allow-https-localhost-chrome/.
 
 ## What is this?
 

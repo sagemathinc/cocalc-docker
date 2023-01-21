@@ -21,10 +21,10 @@ For other operating systems and way more details, see below.  But a quick note, 
 docker run --name=cocalc -d -v ~/cocalc:/projects -p 443:443 sagemathinc/cocalc-aarch64
 ```
 
-If the above doesn't work due to something else already using port 443 or you wanting to serve cocalc on a different port, you could use `-p 4043:443` instead.  There is extensive Docker documentation online.  For example the following runs the lite version of cocalc-docker on an Apple M1 serving on port 7000:
+If the above doesn't work due to something else already using port 443 or you wanting to serve cocalc on a different port, you could use `-p 4043:443` instead.  There is extensive Docker documentation online.  For example the following runs the lite version of cocalc-docker on an Apple M1 serving on port 7100:
 
 ```sh
- docker run --name=cocalc -d -v ~/cocalc:/projects -p 7000:443 sagemathinc/cocalc-lite-aarch64
+ docker run --name=cocalc -d -v ~/cocalc:/projects -p 7100:443 sagemathinc/cocalc-lite-aarch64
  ```
 
 ## What is this?

@@ -1,8 +1,10 @@
 #!/usr/bin/env bash
-set -ex
 
 docker stop cocalc-test-personal
 docker rm cocalc-test-personal
+
+set -ex
+
 export BRANCH="${BRANCH:-master}"
 echo "BRANCH=$BRANCH"
 commit=`git ls-remote -h https://github.com/sagemathinc/cocalc $BRANCH | awk '{print $1}'`

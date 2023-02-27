@@ -57,7 +57,8 @@ RUN \
        nano \
        alpine-pico \
        parallel \
-       earlyoom
+       earlyoom \
+       macaulay2
 
  RUN \
      apt-get update \
@@ -257,6 +258,8 @@ RUN mv "$HOME/.local/share/jupyter/kernels/julia"* "/usr/local/share/jupyter/ker
 # Also add Pluto system-wide, since we'll likely support it soon in cocalc, and also
 # Nemo and Hecke (some math software).
 RUN echo 'using Pkg; Pkg.add("Pluto"); Pkg.add("Nemo"); Pkg.add("Hecke"); Pkg.add("Oscar")' | JULIA_DEPOT_PATH=/opt/julia/local/share/julia JULIA_PKG=/opt/julia/local/share/julia julia
+# Distributions, Random, HomotopyContinuation
+RUN echo 'using Pkg; Pkg.add("Distributions"); Pkg.add("Random"); Pkg.add("HomotopyContinuation")' | JULIA_DEPOT_PATH=/opt/julia/local/share/julia JULIA_PKG=/opt/julia/local/share/julia julia
 
 
 

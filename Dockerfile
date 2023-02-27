@@ -56,7 +56,8 @@ RUN \
        tidy \
        nano \
        alpine-pico \
-       parallel
+       parallel \
+       earlyoom
 
  RUN \
      apt-get update \
@@ -134,6 +135,13 @@ RUN \
 RUN \
    apt-get update \
   && DEBIAN_FRONTEND=noninteractive apt-get install -y tachyon
+
+# install the latest pari-gp
+RUN \
+   wget https://pari.math.u-bordeaux.fr/pub/pari/unix/pari.tgz \
+   && tar xf pari.tgz \
+   && cd pari-* \
+   && MAKE="make -j$(cat /proc/cpuinfo | grep processor | wc -l)" ./Configure --prefix=/usr/local && make install
 
 # Build and install Sage -- see https://github.com/sagemath/docker-images
 COPY scripts/ /usr/sage-install-scripts/

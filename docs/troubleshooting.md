@@ -128,3 +128,5 @@ undefined
 
 Look at /tmp/log to see any logging output.
 
+You can also [use an external PostgreSQL server](./external-postgresql.md).
+

@@ -10,6 +10,7 @@ GitHub: https://github.com/sagemathinc/cocalc-docker
 ```sh
 docker run --name=cocalc -d -v ~/cocalc:/projects -p 443:443 sagemathinc/cocalc
 ```
+
 NOTE: There are also aarch64 images for Apple M1, and a "lite" version that is much smaller because
 it doesn't come with Sage, Latex, etc.  See https://hub.docker.com/u/sagemathinc for a list of images.
 
@@ -26,14 +27,14 @@ If the above doesn't work due to something else already using port 443 or you wa
 ```sh
  docker run --name=cocalc -d -v ~/cocalc:/projects -p 7100:443 sagemathinc/cocalc-lite-aarch64
  ```
- 
+
 ## Connecting to https://localhost:...
 
 The default cocalc-docker container of course has only a self-signed ssl certificate.  Browsers have cracked down more and more on allowing
 connections to such servers.   Because cocalc-docker is serving on localhost, you can explicitly tell your browser to allow the connection.
 Do a Google search for "chrome allow localhost https" to find out how; one result is https://communicode.io/allow-https-localhost-chrome/.
 
-## What is this?
+## What is CoCalc\-Docker?
 
 **Run CoCalc for free for a small group on your own server or laptop!**
 
@@ -337,7 +338,7 @@ root@17fecb49c5c2:/cocalc/src/scripts# more ./make-user-admin
 echo "update accounts set groups='{admin}' where email_address='$1'" | psql
 ```
 
-As you can see, aside from some error checking, the entire script is just a 1-line PostgreSQL query.If you know basic SQL, you can  very easily do all kinds of interesting things.If you type `psql` as root, you'll get the PostgreSQL shell connected to the database for CoCalc.Type `\d` to see the tables, and `\d tablename` for more about a particular table.  For example,typing `\d accounts` shows all the fields in the accounts table, and groups is one of them.Here's [where in the source code](https://github.com/sagemathinc/cocalc/tree/master/src/smc-util/db-schema) ofCoCalc itself all of these database tables are defined.    In any case, being aware of all this can be very helpfulif you want to do some batch action, e.g., :
+As you can see, aside from some error checking, the entire script is just a 1-line PostgreSQL query.  If you know basic SQL, you can  very easily do all kinds of interesting things.If you type `psql` as root, you'll get the PostgreSQL shell connected to the database for CoCalc.  Type `\d` to see the tables, and `\d tablename` for more about a particular table.  For example,typing `\d accounts` shows all the fields in the accounts table, and groups is one of them.Here's [where in the source code](https://github.com/sagemathinc/cocalc/tree/master/src/smc-util/db-schema) ofCoCalc itself all of these database tables are defined.    In any case, being aware of all this can be very helpfulif you want to do some batch action, e.g., :
 
 - delete all accounts that are old or inactive
 - query to get the status of projects or accounts
@@ -435,6 +436,10 @@ $ setenforce 1
 
 -- via [discussion](https://groups.google.com/forum/#!msg/cocalc/nhtbraq1_X4/QTlBy3opBAAJ)
 
+### More docs
+
+See the [docs directory](./docs) for some additional documentation.
+
 ## Your data
 
 If you started the container as above, there will be a directory ~/cocalc on your host computer that contains **all** data and files related to your projects and users -- go ahead and verify that it is there before upgrading. It might look like this:
@@ -445,6 +450,10 @@ be889c14-dc96-4538-989b-4117ffe84148	postgres    conf
 ```
 
 The directory `postgres` contains the database files, so all projects, users, file editing history, etc. The directory conf contains some secrets and log files. There will also be one directory (like `be889c14-dc96-4538-989b-4117ffe84148`) for each project that is created.
+
+### External PostgreSQL server
+
+CoCalc\-Docker includes a PostgreSQL server.  However, you can also [use your own external PostgreSQL server](./docs/external-postgresql.md).
 
 ## Upgrade
 
@@ -509,7 +518,7 @@ Additional notes:
 
 ## Troubleshooting
 
-- [A short guide](./TROUBLESHOOTING.md)
+- [A short guide](./docs/troubleshooting.md)
 
 ## Build
 

@@ -284,17 +284,23 @@ and open your web browser to https://localhost:8080
 
 **IMPORTANT**: _The ssh_ [directions for cocalc.com involving key management,](https://doc.cocalc.com/account/ssh.html) _etc., do not apply to cocalc\-docker._  [cocalc.com](http://cocalc.com) _uses an "ssh gateway", and uniform key management across all of your projects.  Cocalc\-docker doesn't implement any of that, and just does ssh access directly, in exactly the same standard way as a generic Linux install._
 
-Instead of doing:
+In order to ssh into cocalc\-docker, you must expose port 22 of your cocalc\-docker container to the outside world.  To do that you have to create the container with the option `-p <your ip address>:2222:22` \(say\).  Thus, instead of doing:
 
 ```
 docker run --name=cocalc -d -v ~/cocalc:/projects -p 443:443 sagemathinc/cocalc
 ```
 
-do this:
+do this instead:
 
 ```
 docker run --name=cocalc -d -v ~/cocalc:/projects -p 443:443 -p <your ip address>:2222:22  sagemathinc/cocalc
 ```
+
+NOTES:
+
+- You can use a different port instead of port 2222.  That's just an arbitrary port that you'll ssh to \(i.e., you pass `-p 2222` to ssh.\)
+
+- If you have an existing cocalc\-docker, and just want to expose port 22 without otherwise changing it, that is a massive pain \-\- that sort of dynamic reconfiguration is just not something that Docker is any good at.  Instead, your best bet is to stop and delete that cocalc\-docker and create a new one.  Hopefully you are using the `-v` option, so all your data is stored on your filesystem, rather than in the Docker container!
 
 Then you can do the following, _but it won't succeed until you configure the_ _`.ssh`_ _directory in your project, as explained below:_
 
@@ -337,6 +343,8 @@ Welcome to Ubuntu 22.04.1 LTS (GNU/Linux 5.10.124-linuxkit aarch64)
 ~$ more .ssh/authorized_keys
 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIA1bwpB7b7TVIexZxW003FCbDqzyFurSwZlljmT7sWzo wstein@Williams-Mac-Studio.local
 ```
+
+To **use rsync** to copy files to your project, make sure to include the `-e 'ssh -p 2222'` option \([more discussion](https://stackoverflow.com/questions/4549945/is-it-possible-to-specify-a-different-ssh-port-when-using-rsync)\).
 
 ### Make a user an admin
 

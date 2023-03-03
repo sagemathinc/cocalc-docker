@@ -282,7 +282,7 @@ and open your web browser to https://localhost:8080
 
 ### SSH into a project
 
-**IMPORTANT**: _The ssh_ [_direction for cocalc.com involving key management,_](https://doc.cocalc.com/account/ssh.html) _etc., do not apply to cocalc\-docker._  [_cocalc.com_](http://cocalc.com) _uses an "ssh gateway" an uniform key management across all of your projects.  Cocalc\-docker doesn't implement any of that, and just does ssh access directly, in exactly the same standard way as a generic Linux install running on Docker._
+**IMPORTANT**: _The ssh_ [directions for cocalc.com involving key management,](https://doc.cocalc.com/account/ssh.html) _etc., do not apply to cocalc\-docker._  [cocalc.com](http://cocalc.com) _uses an "ssh gateway", and uniform key management across all of your projects.  Cocalc\-docker doesn't implement any of that, and just does ssh access directly, in exactly the same standard way as a generic Linux install._
 
 Instead of doing:
 

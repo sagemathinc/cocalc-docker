@@ -282,6 +282,8 @@ and open your web browser to https://localhost:8080
 
 ### SSH into a project
 
+**IMPORTANT**: _The ssh_ [_direction for cocalc.com involving key management,_](https://doc.cocalc.com/account/ssh.html) _etc., do not apply to cocalc\-docker._  [_cocalc.com_](http://cocalc.com) _uses an "ssh gateway" an uniform key management across all of your projects.  Cocalc\-docker doesn't implement any of that, and just does ssh access directly, in exactly the same standard way as a generic Linux install running on Docker._
+
 Instead of doing:
 
 ```
@@ -294,27 +296,46 @@ do this:
 docker run --name=cocalc -d -v ~/cocalc:/projects -p 443:443 -p <your ip address>:2222:22  sagemathinc/cocalc
 ```
 
-Then you can do:
+Then you can do the following, _but it won't succeed until you configure the_ _`.ssh`_ _directory in your project, as explained below:_
 
 ```
-ssh projectid@<your ip address> -p 2222
+~$ ssh projectid@<your ip address> -p 2222
 ```
 
-Note that `project_id` is the hex id string for the project *without hyphens*. One way to show project id in this format is to open a .term file in the project and run this command: (This only works in CoCalc in Docker; USER is set differently in production CoCalc.)
+Note that `projectid` is the hex id string for the project _without hyphens_. One way to show the project id in this format is to open a .term file in your CoCalc project and run the following command:
 
 ```
-echo $USER
+~$ echo $USER
 ```
 
-To use SSH key authentication with the Docker container, have your private key file in the usual place in the host computer, for example `~/.ssh/.id_cocalc`, and copy the matching public key into your project's home directory. For example, you could do the following in a .term in your project:
+To use SSH key authentication with the Docker container, have your private key file in the usual place in the host computer, for example `~/.ssh/.id_ed25519`, and copy the matching public key into your project's home directory. For example, you could do the following in a .term in your project:
 
 ```
-cd
-mkdir .ssh
-chmod 700 .ssh
-vi .ssh/authorized_keys
+~$ cd
+~$ mkdir .ssh
+~$ vi .ssh/authorized_keys
 ... paste in contents of ~/.ssh/id_cocalc.pub from host computer ...
-chmod 600 .ssh/authorized_keys
+```
+
+After doing that, you can then ssh to your project. Here's a less abstract example showing what this looks like.
+
+```sh
+wstein@studio ~ % docker run --name=cocalc-lite-test -d -p 127.0.0.1:4043:443 -p 127.0.0.1:2022:22 sagemathinc/cocalc-lite-aarch64
+wstein@studio ~ % more ~/.ssh/id_ed25519.pub
+ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIA1bwpB7b7TVIexZxW003FCbDqzyFurSwZlljmT7sWzo wstein@studio
+# I then sign in via my web browser and create a project, and make the above key the 
+# contents of ~/.ssh/authorized_keys inside my project. After doing that, the following works:
+wstein@studio ~ % ssh 65b5a3c0e4d046329854f3d3db725f0b@localhost -p 2022
+The authenticity of host '[localhost]:2022 ([127.0.0.1]:2022)' [...]
+Are you sure you want to continue connecting (yes/no/[fingerprint])? yes [...]
+Welcome to Ubuntu 22.04.1 LTS (GNU/Linux 5.10.124-linuxkit aarch64)
+[...]
+~$ hostname
+6456fb9c78a8
+~$ echo $USER
+65b5a3c0e4d046329854f3d3db725f0b
+~$ more .ssh/authorized_keys
+ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIA1bwpB7b7TVIexZxW003FCbDqzyFurSwZlljmT7sWzo wstein@Williams-Mac-Studio.local
 ```
 
 ### Make a user an admin

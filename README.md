@@ -2,6 +2,8 @@
 
 GitHub: https://github.com/sagemathinc/cocalc-docker
 
+Docs: [https://doc.cocalc.com/docker\-image.html](https://doc.cocalc.com/docker-image.html) 
+
 **Quickstart on a Linux server**
 
 1. Make sure you have at least **25GB disk space free and Docker installed.**
@@ -28,31 +30,35 @@ If the above doesn't work due to something else already using port 443 or you wa
  docker run --name=cocalc -d -v ~/cocalc:/projects -p 7100:443 sagemathinc/cocalc-lite-aarch64
  ```
 
-## Connecting to https://localhost:...
+## Connecting to https://localhost
 
-The default cocalc-docker container of course has only a self-signed ssl certificate.  Browsers have cracked down more and more on allowing
-connections to such servers.   Because cocalc-docker is serving on localhost, you can explicitly tell your browser to allow the connection.
-Do a Google search for "chrome allow localhost https" to find out how; one result is https://communicode.io/allow-https-localhost-chrome/.
+The default cocalc\-docker container of course has only a self\-signed ssl certificate.  Browsers have cracked down more and more on allowing
+connections to such servers.   Because cocalc\-docker is serving on localhost, you must explicitly tell your browser to allow the connection.
+Do a Google search for "chrome allow localhost https" to find out how; one result is [https://communicode.io/allow\-https\-localhost\-chrome/](https://communicode.io/allow-https-localhost-chrome/).
 
 ## What is CoCalc\-Docker?
 
 **Run CoCalc for free for a small group on your own server or laptop!**
 
-This is a free open-source  multiuser CoCalc server that you can _**very easily**_ install on your own computer or server using Docker.  If you need something to install on a cluster of servers using Kubernetes, see [cocalc-kubernetes](https://github.com/sagemathinc/cocalc-kubernetes).
+This is a free open\-source  multiuser CoCalc server that you can _**very easily**_ install on your own computer or server using Docker.  If you need something to install on a cluster of servers using Kubernetes, see [cocalc\-cloud](https://doc.cocalc.com/cocalc-cloud.html).
 
 **LICENSE AND SUPPORT:**
 
-- Much of this code is licensed [under the AGPL](https://en.wikipedia.org/wiki/Affero_General_Public_License) condition to the [commons clause](https://commonsclause.com/) exception. If you would instead like a business-friendly MIT license instead, please contact [help@cocalc.com](help@cocalc.com), and we will sell you a 1-year license for $999, which includes some support (you can pay more for significant support).  We **do** have several happy paying customers as of September 2020, and cocalc-docker is very popular.
-- Join the [CoCalc Docker mailing list](https://groups.google.com/a/sagemath.com/group/cocalc-docker/subscribe) for news, updates and more.
-- [CoCalc mailing list](https://groups.google.com/forum/?fromgroups#!forum/cocalc) for general community support.
+- Much of this code is licensed [under the AGPL](https://en.wikipedia.org/wiki/Affero_General_Public_License) condition to the [commons clause](https://commonsclause.com/) exception. If you would instead like a business\-friendly MIT license instead, please contact [help@cocalc.com](mailto:help@cocalc.com), and we will sell you a 1\-year license for \$999, which includes some support \(you can pay more for significant support\).  We **do** have many happy paying customers, and cocalc\-docker is popular.
+- Visit the [CoCalc Docker discussion board](https://github.com/sagemathinc/cocalc-docker/discussions) for news, updates and more; there is also a more general
+  [CoCalc discussion board](https://github.com/sagemathinc/cocalc/discussions).
+- There is a specialized [CoCalc Docker mailing list](https://groups.google.com/a/sagemath.com/group/cocalc-docker/subscribe), and a more general
+  [CoCalc mailing list](https://groups.google.com/forum/?fromgroups#!forum/cocalc).
+- Read the [overview docs](https://doc.cocalc.com/docker-image.html).
 
 **SECURITY STATUS:**
 
 - This is _**not blatantly insecure**_ from outside attack: the database has a long random password, user accounts are separate, encrypted SSL communication is used by default, etc.
-- That said, **a determined user with an account can easily access or change files of other users in the same container!** Open ports are exposed to users for reading/writing to project files, these can be used by authenticated users for accessing any other project's open files. Requests should only connect to the main hub process, which proxies traffic to the raw server with an auth key created by the project's secret key changing on every project startup, see [Issue 45](https://github.com/sagemathinc/cocalc-docker/issues/45). Also see the related issues for adding a user auth token to all requests required for each separate sub module, including JupyterLab server [Issue 46](https://github.com/sagemathinc/cocalc-docker/issues/46) and classical Jupyter in an iframe [Issue 47](https://github.com/sagemathinc/cocalc-docker/issues/47).
+- That said, **a determined user with a CoCalc account could in theory easily access or change files of other users in the same container, and can definitely overload the server!** Open ports are exposed to users for reading/writing to project files, these can be used by authenticated users for accessing any other project's open files. Requests should only connect to the main hub process, which proxies traffic to the raw server with an auth key created by the project's secret key changing on every project startup, see [Issue 45](https://github.com/sagemathinc/cocalc-docker/issues/45). Also see the related issues for adding a user auth token to all requests required for each separate sub module, including JupyterLab server [Issue 46](https://github.com/sagemathinc/cocalc-docker/issues/46) and classical Jupyter in an iframe [Issue 47](https://github.com/sagemathinc/cocalc-docker/issues/47).
 - There is no quota on project resource usage, so users could easily crash the server both intentionally or accidentally by running arbitrary code, and could also overflow the storage container by creating excessive files.
-- Use this for personal use, behind a firewall, or with an account creation token, so that only other people you trust create accounts.  Don't make one of these publicly available with important data in it and no account creation token! See [issue 2031]( https://github.com/sagemathinc/cocalc/issues/2031).  Basically, use this only with people you trust.
-- See the [open docker-related CoCalc issues](https://github.com/sagemathinc/cocalc/issues?q=is%3Aopen+is%3Aissue+label%3AA-docker).
+- Use this for personal use, behind a firewall, or with an account creation token, so that only other people you trust create accounts.  Don't make one of these publicly available with important data in it and no account creation token! See [issue 2031](https://github.com/sagemathinc/cocalc/issues/2031).  Basically, use this only with people you trust.
+- See the [open docker\-related CoCalc issues](https://github.com/sagemathinc/cocalc/issues?q=is%3Aopen+is%3Aissue+label%3AA-docker).
+- The above security and resource problems are all solved by [cocalc\-cloud](https://doc.cocalc.com/cocalc-cloud.html).
 
 ## Instructions
 

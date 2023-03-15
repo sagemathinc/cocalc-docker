@@ -559,35 +559,30 @@ Additional notes:
 
 - [A short guide](./docs/troubleshooting.md)
 
-## Build
+## Building your own Docker image
 
-This section is for CoCalc developers.
+The cocalc\-docker images are _**not**_ some black box images that are built in some mysterious way. You can see exactly what recipe is used to build them by looking at [Dockerfile](./Dockerfile). Moreover, you can modify Dockerfile if you want and build your own image.
 
-Build the image:
+It is easy \(but time consuming\) to build the cocalc\-docker image from scratch.  We do this regularly using the `update-the-build-stage-0.sh` scripts, e.g., for x86\_64:
 
-```
-make build-full   # or make build
-```
-
-Run the image (to test):
-
-```
-make run
+```sh
+$ cd x86_64
+$ ./update-the-build-stage-0.sh
 ```
 
-How I pushed this:
+NOTE: Depending on how you have Docker setup, you might need to instead do this:  `sudo ./update-the-build-stage-0.sh`
 
-```
-docker tag smc:latest sagemathinc/cocalc
-docker login --username=sagemathinc
-docker push  sagemathinc/cocalc
-```
+There are several other variants of this script, for personal and lite mode, and for aarch64 \(e.g., Apple Silicon\).
 
-Also to build at a specific commit:
+This script is short and you should read it to see what it does. 
 
-```
-docker build --build-arg commit=121b564a6b08942849372b9ffdcdddd7194b3e89 -t smc .
-```
+I personally also do ./update\-the\-build\-stage\-1.sh, to also push my image remotely, but that should _**not**_ work for you without some changes, and you probably don't need to do that anyways. 
+
+Some reasons to build your own image:
+
+- You want to run the most up\-to\-date version of the [cocalc source code](https://github.com/sagemathinc/cocalc), or your own special branch. 
+- You want to change what software is installed in your cocalc\-docker image, e.g., remove Julia and add something else like Tensorflow that we don't include by default.
+- You want the build of SageMath to be optimized for your hardware.  Building cocalc\-docker from source also builds Sagemath from source, and it's more likely to work well on your hardware if you build it on your hardware.   This can avoid, e.g., "ILLEGAL INSTRUCTION" issues on old machines.
 
 ## Adding Tensorflow-GPU support
 

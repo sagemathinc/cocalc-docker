@@ -523,6 +523,10 @@ root@...:/cocalc/src# npm run make
 
 This should take about 15 minutes.  It could randomly fail if some npm package is temporarily not available; if that happens, try again.   Once it finishes successfully, stop your container, then start it again.   Upgrading this way does not upgrade any system-wide Ubuntu packages or configuration, so it might result in a broken Docker container.  In that case, your data should be fine, and you can upgrade as described in the section above.
 
+## Cocalc\-Personal
+
+There is a [minimal version of cocalc\-docker](./docs/personal/README.md) that is built to run in personal mode, in which **absolutely everything in the container runs as a single non\-root user named** **`user.`** 
+
 ## Adding custom software to your CoCalc instance
 
 The CoCalc Docker images at Docker Hub contain a subset of all the software in at [cocalc.com](https://cocalc.com). At present, the images are about 12 GB while the cloud service has hundreds of GB of packages and libraries.

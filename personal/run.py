@@ -103,11 +103,41 @@ def start_postgres():
     run("mkdir -p /home/user/logs/ && cd /home/user/cocalc/src && npm run database > /home/user/logs/postgres.out 2>/home/user/logs/postgres.err & "
         )
 
+def start_ssh():
+    log("start_ssh")
+    log("ssh -- write conf file")
+    if not os.path.exists("/home/user/.ssh/sshd_config"):
+        open("/home/user/.ssh/sshd_config", "w").write(r"""
+ChallengeResponseAuthentication no
+UsePAM no
+X11Forwarding yes
+PrintMotd no
+AcceptEnv LANG LC_*
+PermitUserEnvironment yes
+# override default of no subsystems
+Subsystem	sftp	/usr/lib/openssh/sftp-server
+ClientAliveInterval 120
+UseDNS no
+AllowAgentForwarding yes
+""")
+    log("starting ssh")
+    run('exec /usr/sbin/sshd -D -p 2222 -h /home/user/.ssh/ssh_host_rsa_key -f /home/user/.ssh/sshd_config > /home/user/logs/sshd.out 2>/home/user/logs/sshd.err &')
+
+
+def create_ssh_keys():
+    log("root_ssh_keys: creating them")
+    os.makedirs("/home/user/.ssh")
+    if not os.path.exists("/home/user/.ssh/ssh_host_rsa_key"):
+        run("ssh-keygen -t rsa -f /home/user/.ssh/ssh_host_rsa_key -N ''")
+
+
 
 def main():
     init_projects_path()
     start_postgres()
     start_hub()
+    create_ssh_keys()
+    start_ssh()
     while True:
         log("Started services.")
         os.wait()

@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
-# NOTE: There is a simpler different variant of this script in the personal/ subdirectory.
+# NOTE: There is a simpler different variant of this script in the personal/ subdirectory,
+# which runs everything as a single non-root user.
 
 import os, tempfile, time, shutil, subprocess, sys
 

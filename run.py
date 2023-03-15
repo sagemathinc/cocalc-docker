@@ -177,9 +177,15 @@ def start_postgres():
         % PGDATA)
 
 
+def init_log():
+    # see https://github.com/sagemathinc/cocalc-docker/issues/6
+    # These are two huge sparse files that break docker image-related commands,
+    # but are otherwise harmless.  Deleting them causes them to not be used.
+    run(['rm', '-f', '/var/log/faillog', '/var/log/lastlog'])
 
 
 def main():
+    init_log()
     init_projects_path()
     self_signed_cert()
     root_ssh_keys()

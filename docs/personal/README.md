@@ -18,7 +18,7 @@ or for AARCH 64 \(e.g., Apple Silicon\):
 docker run --name=cocalc-personal-test -d -p 127.0.0.1:5123:5000 -p 127.0.0.1:5222:2222 -v ~/cocalc-personal:/home/user/cocalc/src/data  sagemathinc/cocalc-personal-aarch64 
 ```
 
-With the above on localhost only you can connect to cocalc via http://localhost:5123 and you can also ssh in via port 5222.  You can't directly connect from any external machine, which is a good approach for something that is not designed to be secure for multiple users at once. 
+With the above on localhost only you can connect to cocalc via http://localhost:5123 and you can also [ssh in via port 5222 if you add your public key to /home/user/.ssh/authorized\_keys](./ssh.md).  You can't directly connect from any external machine, which is a good approach for something that is not designed to be secure for multiple users at once. 
 
 If you open http://localhost:5123/projects even without creating an account, you'll be able to immediately start making cocalc projects and using them.  
 

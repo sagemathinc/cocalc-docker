@@ -475,6 +475,11 @@ $ setenforce 1
 
 See the [docs directory](./docs) for some additional documentation.
 
+- [ChatGPT Integration](./docs/chatgpt.md)
+- [Using an External PostreSQL Server](./docs/external-postgresql.md)
+- [Personal Mode](./docs/personal/)
+- [Troubleshooting](./docs/troubleshooting.md)
+
 ## Your data
 
 If you started the container as above, there will be a directory ~/cocalc on your host computer that contains **all** data and files related to your projects and users -- go ahead and verify that it is there before upgrading. It might look like this:

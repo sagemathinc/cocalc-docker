@@ -378,7 +378,7 @@ As you can see, aside from some error checking, the entire script is just a 1-li
 - delete all accounts that are old or inactive
 - query to get the status of projects or accounts
 
-### Make a _project_ have sudo access
+### Make a _project_ have sudo access (root with no password)
 
 You can also make it so that running `sudo su` in a CoCalc terminal allows a project to gain root access.  First as above, from outside of CoCalc, do`docker exec -it cocalc bash`, then type `visudo`:
 

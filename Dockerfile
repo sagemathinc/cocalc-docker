@@ -1,3 +1,11 @@
+# This builds a Docker image for CoCalc, which is an online platform for
+# collaborative mathematical computation. It installs software for CoCalc
+# including latex, pandoc, tmux, flex, bison, and various other packages. It also
+# installs an ancient PostgreSQL 10 database, the R statistical software, SageMath
+# (built from source), and the Julia programming language. Finally, it installs
+# various Jupyter kernels, including ones for Python, Octave, and JavaScript. The
+# image is built on top of the Ubuntu 22.04 operating system.
+
 ARG MYAPP_IMAGE=ubuntu:22.04
 FROM $MYAPP_IMAGE
 

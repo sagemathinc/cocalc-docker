@@ -231,7 +231,7 @@ RUN \
 #  && its --install=global
 
 # Install Julia
-ARG JULIA=1.8.1
+ARG JULIA=1.8.5
 RUN cd /tmp \
  && export ARCH1=`uname -m | sed s/x86_64/x64/` \
  && export ARCH2=`uname -m` \

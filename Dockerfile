@@ -4,9 +4,9 @@
 # installs an ancient PostgreSQL 10 database, the R statistical software, SageMath
 # (built from source), and the Julia programming language. Finally, it installs
 # various Jupyter kernels, including ones for Python, Octave, and JavaScript. The
-# image is built on top of the Ubuntu 22.04 operating system.
+# image is built on top of the Ubuntu 22.10 operating system.
 
-ARG MYAPP_IMAGE=ubuntu:22.04
+ARG MYAPP_IMAGE=ubuntu:22.10
 FROM $MYAPP_IMAGE
 
 MAINTAINER William Stein <wstein@sagemath.com>
@@ -56,13 +56,18 @@ RUN \
        python3 \
        python2 \
        python3-pip \
+       python3-pandas \
        make \
        cmake \
        g++ \
        sudo \
        psmisc \
        rsync \
-       tidy
+       tidy \
+       nodejs \
+       npm \
+       libxml2-dev \
+       libxslt-dev
 
  RUN \
      apt-get update \
@@ -109,19 +114,21 @@ RUN \
        libtool \
        tcl \
        vim \
+       neovim \
        zip \
-       bsdmainutils
+       bsdmainutils \
+       postgresql
 
 # We stick with PostgreSQL 10 for now, to avoid any issues with users having to
 # update to an incompatible version 12.  We don't use postgresql-12 features *yet*,
 # and won't upgrade until we need to or it becomes a security liability.  Note that
 # PostgreSQL 10 is officially supported until November 10, 2022 according to
 # https://www.postgresql.org/support/versioning/
-RUN \
-     sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list' \
-  && wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add - \
-  && apt-get update \
-  && apt-get install -y  postgresql-10
+# RUN \
+#      sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list' \
+#   && wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add - \
+#   && apt-get update \
+#   && apt-get install -y  postgresql-10
 
 
 # Install the R statistical software.  We do NOT use a custom repo, etc., as
@@ -130,7 +137,7 @@ RUN \
 # the latest R, please install it yourself.
 RUN \
   apt-get update \
-  && apt-get install -y r-base
+  && apt-get install -y r-base r-cran-tidyverse
 
 # These are specifically packages that we install since building them as
 # part of Sage can be problematic (e.g., on aarch64).  Dima encouraged me
@@ -213,12 +220,6 @@ RUN \
      apt-get update \
   && apt-get install -y aspell-*
 
-RUN \
-     wget -qO- https://deb.nodesource.com/setup_16.x | bash - \
-  && apt-get install -y nodejs libxml2-dev libxslt-dev \
-  && /usr/bin/npm install -g npm
-
-
 # Kernel for javascript (the node.js Jupyter kernel)
 RUN \
      npm install --unsafe-perm -g ijavascript \
@@ -271,7 +272,7 @@ RUN \
 RUN \
      apt-get update \
   && DEBIAN_FRONTEND=noninteractive apt-get install -y x11-apps dbus-x11 gnome-terminal \
-     vim-gtk lyx libreoffice inkscape gimp firefox texstudio evince mesa-utils \
+     vim-gtk3 lyx libreoffice inkscape gimp firefox texstudio evince mesa-utils \
      xdotool xclip x11-xkb-utils
 
 # chromium-browser is used in headless mode for printing Jupyter notebooks.
@@ -300,6 +301,9 @@ RUN echo "umask 077" >> /etc/bash.bashrc
 
 # Install some Jupyter kernel definitions
 COPY kernels /usr/local/share/jupyter/kernels
+
+# Bash jupyter kernel
+RUN umask 022 && pip install bash_kernel && python3 -m bash_kernel.install
 
 # Configure so that R kernel actually works -- see https://github.com/IRkernel/IRkernel/issues/388
 COPY kernels/ir/Rprofile.site /usr/local/sage/local/lib/R/etc/Rprofile.site

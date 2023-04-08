@@ -153,7 +153,7 @@ def start_postgres():
     if not os.path.exists(
             PGDATA):  # see comments in smc/src/dev/project/start_postgres.py
         log("start_postgres:", "create data directory ", PGDATA)
-        run("sudo -u sage /usr/lib/postgresql/10/bin/pg_ctl init -D '%s'" %
+        run("sudo -u sage /usr/lib/postgresql/14/bin/pg_ctl init -D '%s'" %
             PGDATA)
         open(os.path.join(PGDATA, 'pg_hba.conf'),
              'w').write("local all all trust")
@@ -163,17 +163,17 @@ def start_postgres():
         open(conf, 'w').write(s)
         os.makedirs(PGHOST)
         postgres_perms()
-        run("sudo -u sage /usr/lib/postgresql/10/bin/postgres -D '%s' >%s/postgres.log 2>&1 &"
+        run("sudo -u sage /usr/lib/postgresql/14/bin/postgres -D '%s' >%s/postgres.log 2>&1 &"
             % (PGDATA, PGDATA))
         time.sleep(5)
-        run("sudo -u sage /usr/lib/postgresql/10/bin/createuser -h '%s' -sE smc"
+        run("sudo -u sage /usr/lib/postgresql/14/bin/createuser -h '%s' -sE smc"
             % PGHOST)
         run("sudo -u sage kill %s" %
             (open(os.path.join(PGDATA, 'postmaster.pid')).read().split()[0]))
         time.sleep(3)
     log("start_postgres:", "starting the server")
     os.system(
-        "sudo -u sage /usr/lib/postgresql/10/bin/postgres -D '%s' > /var/log/postgres.log 2>&1 &"
+        "sudo -u sage /usr/lib/postgresql/14/bin/postgres -D '%s' > /var/log/postgres.log 2>&1 &"
         % PGDATA)
 
 

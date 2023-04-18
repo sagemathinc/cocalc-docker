@@ -9,13 +9,13 @@ You can build an updated version of cocalc\-personal yourself using the dockerfi
 We also sometimes build updated images using the scripts [here](../../aarch64-personal) and [here](../../x86_64-personal/) and you can run them as follows, with data persisting to your home directory in `~/cocalc-personal`:
 
 ```sh
-docker run --name=cocalc-personal-test -d -p 127.0.0.1:5123:5000 -p 127.0.0.1:5222:2222 -v ~/cocalc-personal:/home/user/cocalc/src/data sagemathinc/cocalc-personal
+docker run --name=cocalc-personal-test -d -p 127.0.0.1:5123:5000 -p 127.0.0.1:5222:2222 -v ~/cocalc-personal:/home/user/cocalc/src/data sagemathinc/cocalc-v2-personal
 ```
 
 or for AARCH 64 \(e.g., Apple Silicon\):
 
 ```sh
-docker run --name=cocalc-personal-test -d -p 127.0.0.1:5123:5000 -p 127.0.0.1:5222:2222 -v ~/cocalc-personal:/home/user/cocalc/src/data  sagemathinc/cocalc-personal-aarch64 
+docker run --name=cocalc-personal-test -d -p 127.0.0.1:5123:5000 -p 127.0.0.1:5222:2222 -v ~/cocalc-personal:/home/user/cocalc/src/data  sagemathinc/cocalc-v2-personal-aarch64 
 ```
 
 With the above on localhost only you can connect to cocalc via http://localhost:5123 and you can also [ssh in via port 5222 if you add your public key to /home/user/.ssh/authorized\_keys](./ssh.md).  You can't directly connect from any external machine, which is a good approach for something that is not designed to be secure for multiple users at once. 

@@ -27,7 +27,7 @@ docker run --name=cocalc -d -v ~/cocalc:/projects -p 443:443 sagemathinc/cocalc-
 If the above doesn't work due to something else already using port 443 or you wanting to serve cocalc on a different port, you could use `-p 4043:443` instead.  There is extensive Docker documentation online.  For example the following runs the lite version of cocalc-docker on an Apple M1 serving on port 7100:
 
 ```sh
- docker run --name=cocalc -d -v ~/cocalc:/projects -p 7100:443 sagemathinc/cocalc-lite-aarch64
+ docker run --name=cocalc -d -v ~/cocalc:/projects -p 7100:443 sagemathinc/cocalc-v2-lite-aarch64
  ```
 
 **VERSION NOTE:** The sagemathinc/cocalc Docker image is currently not backward compatible with sagemathinc/cocalc\-v2, since sagemathinc/cocalc uses the deprecated PostgreSQL version 10, whereas cocalc\-v2 uses PostgreSQL version 14, and we haven't implemented an automated upgrade path yet. 
@@ -353,7 +353,7 @@ To use SSH key authentication with the Docker container, have your private key f
 After doing that, you can then ssh to your project. Here's a less abstract example showing what this looks like.
 
 ```sh
-wstein@studio ~ % docker run --name=cocalc-lite-test -d -p 127.0.0.1:4043:443 -p 127.0.0.1:2022:22 sagemathinc/cocalc-lite-aarch64
+wstein@studio ~ % docker run --name=cocalc-lite-test -d -p 127.0.0.1:4043:443 -p 127.0.0.1:2022:22 sagemathinc/cocalc-v2-lite-aarch64
 wstein@studio ~ % more ~/.ssh/id_ed25519.pub
 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIA1bwpB7b7TVIexZxW003FCbDqzyFurSwZlljmT7sWzo wstein@studio
 # I then sign in via my web browser and create a project, and make the above key the 

@@ -119,17 +119,6 @@ RUN \
        bsdmainutils \
        postgresql
 
-# We stick with PostgreSQL 10 for now, to avoid any issues with users having to
-# update to an incompatible version 12.  We don't use postgresql-12 features *yet*,
-# and won't upgrade until we need to or it becomes a security liability.  Note that
-# PostgreSQL 10 is officially supported until November 10, 2022 according to
-# https://www.postgresql.org/support/versioning/
-# RUN \
-#      sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list' \
-#   && wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add - \
-#   && apt-get update \
-#   && apt-get install -y  postgresql-10
-
 
 # Install the R statistical software.  We do NOT use a custom repo, etc., as
 # suggested https://github.com/sagemathinc/cocalc-docker/pull/169/files because

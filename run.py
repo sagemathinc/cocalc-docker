@@ -8,6 +8,11 @@ import os, tempfile, time, shutil, subprocess, sys
 # Where all persistent data is stored.
 DATA = os.environ['DATA'] = '/projects'
 
+# True if main server runs on port 80 without ssl
+# If not true, main server listens on port 443 with ssl, and
+# there is a redirect on port 80 to ssl.
+NOSSL = bool(os.environ.get("NOSSL"))
+
 # Only actually set the vars in case they aren't already set.
 # This makes it possible for users to use a custom remote PostgreSQL
 # server if they want.
@@ -132,7 +137,11 @@ def start_hub():
     log("start_hub")
     kill("cocalc-hub-server")
     # NOTE: there's automatic logging to files that rotate as they get bigger...
-    run("mkdir -p /var/log/hub && cd /cocalc/src/packages/hub && pnpm run hub-docker-prod > /var/log/hub/out 2>/var/log/hub/err &")
+    if NOSSL:
+        target = "hub-docker-prod-nossl"
+    else:
+        target = "hub-docker-prod"
+    run(f"mkdir -p /var/log/hub && cd /cocalc/src/packages/hub && pnpm run {target} > /var/log/hub/out 2>/var/log/hub/err &")
 
 def postgres_perms():
     log("postgres_perms: ensuring postgres directory perms are sufficiently restrictive"

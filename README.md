@@ -10,7 +10,7 @@ Docs: [https://doc.cocalc.com/docker\-image.html](https://doc.cocalc.com/docker-
 2. Run
 
 ```sh
-docker run --name=cocalc -d -v ~/cocalc:/projects -p 443:443 sagemathinc/cocalc
+docker run --name=cocalc -d -v ~/cocalc:/projects -p 443:443 sagemathinc/cocalc-v2
 ```
 
 NOTE: There are also aarch64 images for Apple M1, and a "lite" version that is much smaller because
@@ -18,10 +18,10 @@ it doesn't come with Sage, Latex, etc.  See https://hub.docker.com/u/sagemathinc
 
 3. Wait a few minutes for the image to pull, decompress and the container to start, then visit https://localhost.
 
-For other operating systems and way more details, see below.  But a quick note, if you are using aarch64 (e.g., Apple Silicon or Rasberry Pi 64-bit), use `sagemathinc/cocalc-aarch64` instead of `sagemathinc/cocalc` for a native binary!
+For other operating systems and way more details, see below.  But a quick note, if you are using aarch64 \(e.g., Apple Silicon or Rasberry Pi 64\-bit\), use `sagemathinc/cocalc-v2-aarch64` instead of `sagemathinc/cocalc-v2` for a native binary!
 
 ```sh
-docker run --name=cocalc -d -v ~/cocalc:/projects -p 443:443 sagemathinc/cocalc-aarch64
+docker run --name=cocalc -d -v ~/cocalc:/projects -p 443:443 sagemathinc/cocalc-v2-aarch64
 ```
 
 If the above doesn't work due to something else already using port 443 or you wanting to serve cocalc on a different port, you could use `-p 4043:443` instead.  There is extensive Docker documentation online.  For example the following runs the lite version of cocalc-docker on an Apple M1 serving on port 7100:
@@ -29,6 +29,8 @@ If the above doesn't work due to something else already using port 443 or you wa
 ```sh
  docker run --name=cocalc -d -v ~/cocalc:/projects -p 7100:443 sagemathinc/cocalc-lite-aarch64
  ```
+
+**VERSION NOTE:** The sagemathinc/cocalc Docker image is currently not backward compatible with sagemathinc/cocalc\-v2, since sagemathinc/cocalc uses the deprecated PostgreSQL version 10, whereas cocalc\-v2 uses PostgreSQL version 14, and we haven't implemented an automated upgrade path yet. 
 
 ## Connecting to https://localhost
 
@@ -64,13 +66,13 @@ This is a free open\-source  multiuser CoCalc server that you can _**very easily
 
 Install Docker on your computer (e.g., `apt-get install docker.io` on Ubuntu).   Make sure you have at least **25GB disk space free**, then type:
 
-    docker run --name=cocalc -d -v ~/cocalc:/projects -p 443:443 sagemathinc/cocalc
+    docker run --name=cocalc -d -v ~/cocalc:/projects -p 443:443 sagemathinc/cocalc-v2
 
 wait a few minutes for the image to pull, decompress and the container to start, then visit https://localhost.  (If you are using Microsoft Windows, instead open https://host.docker.internal/.) It is expected that you'll see a "Your connection is not private" warning, since you haven't set up a security certificate.  Click "Show advanced" and "Proceed to localhost (unsafe)".
 
 NOTES:
 
-- This Docker image only supports 64-bit Intel.  For ARM aarch64 (e.g., Apple Silicon) just replace sagemathinc/cocalc above by sagemathinc/cocalc-aarch64.
+- This Docker image only supports 64-bit Intel.  For ARM aarch64 (e.g., Apple Silicon) just replace sagemathinc/cocalc-v2 above by sagemathinc/cocalc-v2-aarch64.
 
 - If you get an error about the Docker daemon, instead run `sudo docker ...`.
 
@@ -79,7 +81,7 @@ NOTES:
 - If you are using Microsoft Windows, instead make a docker volume and use that for storage:
   ```
   docker volume create cocalc-volume
-  docker run --name=cocalc -d -v cocalc-volume:/projects -p 443:443 sagemathinc/cocalc
+  docker run --name=cocalc -d -v cocalc-volume:/projects -p 443:443 sagemathinc/cocalc-v2
   ```
 
 
@@ -87,7 +89,7 @@ NOTES:
 
 - If you are using Ubuntu as a host and would like the CoCalc instance to use your host's time and timezone, you can amend the run command as follows, which will use your host's timezone and localtime files inside the container:
   ```
-  docker run --name=cocalc -d -v ~/cocalc:/projects -v "/etc/timezone:/etc/timezone" -v "/etc/localtime:/etc/localtime" -p 443:443 sagemathinc/cocalc
+  docker run --name=cocalc -d -v ~/cocalc:/projects -v "/etc/timezone:/etc/timezone" -v "/etc/localtime:/etc/localtime" -p 443:443 sagemathinc/cocalc-v2
   ```
 
 The above command will first download the image, then start CoCalc, storing your data in the directory `~/cocalc` on your computer. If you want to store your worksheets and edit history elsewhere, change `~/cocalc` to something else.  Once your local CoCalc is running, open your web browser to https://localhost.  (If you are using Microsoft Windows, instead open https://host.docker.internal/.)
@@ -119,7 +121,7 @@ If you want cocalc\-docker to serve everything with a custom base path, e.g., at
 #### (1) Set the BASE\_PATH environment variable:
 
 ```sh
-docker run -e BASE_PATH=/my/base/path --name=cocalc -d -v ~/cocalc:/projects -p 443:443 sagemathinc/cocalc
+docker run -e BASE_PATH=/my/base/path --name=cocalc -d -v ~/cocalc:/projects -p 443:443 sagemathinc/cocalc-v2
 ```
 
 This sets the base path correctly for most of CoCalc, but not for everything, unfortunately. 
@@ -155,8 +157,27 @@ We do much of the development of CoCalc itself on https://cocalc.com using a `BA
 Projects will stop by default if they are idle for 30 minutes.  Admins can manually increase this for any project.  If you want to completely disable the idle timeout functionality, set the `COCALC_NO_IDLE_TIMEOUT` environment variable.  Note that the user interface will still show an idle timeout -- it's just that it will have no impact.
 
 ```sh
-docker run -e COCALC_NO_IDLE_TIMEOUT=yes --name=cocalc -d -v ~/cocalc:/projects -p 443:443 sagemathinc/cocalc
+docker run -e COCALC_NO_IDLE_TIMEOUT=yes --name=cocalc -d -v ~/cocalc:/projects -p 443:443 sagemathinc/cocalc-v2
 ```
+
+### Running a server without SSL \-\- plain http
+
+By default, cocalc\-docker creates services on 3 ports: 
+
+- 22 \-\- ssh
+- 80 \-\- a simple http redirect that sends the user to https
+- 443 \-\- the main site, served over https, but by default with a self\-signed certificate
+
+If you would like the following configuration instead, pass the `--env NOSSL=true` option when you create the Docker container:
+
+- 22 \-\- ssh
+- 80 \-\- the main site, served over htttp
+
+```sh
+docker run --name=cocalc --env NOSSL=true -d -v ~/cocalc:/projects -p 8080:80 sagemathinc/cocalc-v2
+```
+
+You might want to do this if you are doing your ssl termination via some sort of external server, e.g., haproxy or nginx.
 
 ### Installing behind an Nginx Reverse Proxy
 
@@ -165,7 +186,7 @@ If you're running multiple sites from a single server using an Nginx reverse pro
 Instead of mapping port 443 on the container to 443 on the host, map 443 on the container to an arbitray unused port on the host, e.g. 9090:
 
 ```sh
-docker run --name=cocalc -d -v ~/cocalc:/projects -p 9090:443 sagemathinc/cocalc
+docker run --name=cocalc -d -v ~/cocalc:/projects -p 9090:443 sagemathinc/cocalc-v2
 ```
 
 In your nginx `sites-available` folder, create a file like the following called e.g. `mycocalc`:
@@ -257,7 +278,7 @@ You can run CoCalc locally on your Chromebook as long as it supports Crostini Li
 
 4. Install cocalc-docker:
    ```
-   sudo docker run --name=cocalc -d -v /cocalc:/projects -p 443:443 -p 80:80 sagemathinc/cocalc
+   sudo docker run --name=cocalc -d -v /cocalc:/projects -p 443:443 -p 80:80 sagemathinc/cocalc-v2
    ```
 
    Type `/sbin/ifconfig eth0|grep inet` in the terminal, and use whatever ip address is listed there -- e.g., for me it was https://100.115.92.198/
@@ -277,7 +298,7 @@ For **enhanced security**, make the container only listen on localhost:
 ```
 docker stop cocalc
 docker rm cocalc
-docker run --name=cocalc -d -v ~/cocalc:/projects -p  127.0.0.1:443:443 sagemathinc/cocalc
+docker run --name=cocalc -d -v ~/cocalc:/projects -p  127.0.0.1:443:443 sagemathinc/cocalc-v2
 ```
 
 Then the **only way** to access your CoCalc server is to type the following on your local computer:
@@ -293,13 +314,13 @@ and open your web browser to https://localhost:8080
 In order to ssh into cocalc\-docker, you must expose port 22 of your cocalc\-docker container to the outside world.  To do that you have to create the container with the option `-p <your ip address>:2222:22` \(say\).  Thus, instead of doing:
 
 ```
-docker run --name=cocalc -d -v ~/cocalc:/projects -p 443:443 sagemathinc/cocalc
+docker run --name=cocalc -d -v ~/cocalc:/projects -p 443:443 sagemathinc/cocalc-v2
 ```
 
 do this instead:
 
 ```
-docker run --name=cocalc -d -v ~/cocalc:/projects -p 443:443 -p <your ip address>:2222:22  sagemathinc/cocalc
+docker run --name=cocalc -d -v ~/cocalc:/projects -p 443:443 -p <your ip address>:2222:22  sagemathinc/cocalc-v2
 ```
 
 NOTES:
@@ -497,21 +518,25 @@ CoCalc\-Docker includes a PostgreSQL server.  However, you can also [use your ow
 
 ## Upgrade
 
+**WARNING \(APRIL 2023\):** _The sagemathinc/cocalc Docker image is currently_ _**not**_ _backward compatible with sagemathinc/cocalc\-v2, since sagemathinc/cocalc uses the deprecated PostgreSQL version 10, whereas cocalc\-v2 uses PostgreSQL version 14, and we haven't implemented an automated upgrade path yet._ 
+
 New images are released regularly, as you can see [on the SageMath, Inc. Dockerhub page](https://hub.docker.com/u/sagemathinc).
 
 To get the newest image, do this (which will take some time):
 
 ```
-docker pull  sagemathinc/cocalc
+docker pull  sagemathinc/cocalc-v2
 ```
 
 Once done, you can delete and recreate your CoCalc container: (This will not delete any of your project or user data, which you confirmed above is in ~/cocalc.)
 
-    docker stop cocalc
-    docker rm cocalc
-    docker run --name=cocalc -d -v ~/cocalc:/projects -p 443:443 sagemathinc/cocalc
+```
+docker stop cocalc
+docker rm cocalc
+docker run --name=cocalc -d -v ~/cocalc:/projects -p 443:443 sagemathinc/cocalc-v2
+```
 
-Now visit https://localhost to see your upgraded server.
+Now visit https://localhost to see your upgraded server.  If you're usin aarch64 \(e.g., M1 Mac\), be sure to use `sagemathinc/cocalc-v2-aarch64` instead.
 
 #### Upgrade just the CoCalc source code (potentially tricky)
 

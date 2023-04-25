@@ -1,4 +1,4 @@
-ARG MYAPP_IMAGE=ubuntu:22.04
+ARG MYAPP_IMAGE=ubuntu:22.10
 FROM $MYAPP_IMAGE
 
 MAINTAINER William Stein <wstein@sagemath.com>
@@ -52,12 +52,8 @@ RUN \
        automake \
        jq \
        bsdmainutils \
-       postgresql
-
-RUN \
-     wget -qO- https://deb.nodesource.com/setup_16.x | bash - \
-  && DEBIAN_FRONTEND=noninteractive apt-get install -y nodejs libxml2-dev libxslt-dev \
-  && /usr/bin/npm install -g npm pnpm
+       postgresql \
+       nodejs
 
 RUN echo "umask 077" >> /etc/bash.bashrc
 

@@ -261,8 +261,21 @@ RUN \
 RUN \
      apt-get update \
   && DEBIAN_FRONTEND=noninteractive apt-get install -y x11-apps dbus-x11 gnome-terminal \
-     vim-gtk3 lyx libreoffice inkscape gimp firefox texstudio evince mesa-utils \
+     vim-gtk3 lyx libreoffice inkscape gimp texstudio evince mesa-utils \
      xdotool xclip x11-xkb-utils
+
+# installing firefox from Ubuntu official is no longer possible as of Ubuntu 22.10
+# do to snap bS (WTF?).
+# So we get an official image from Mozilla:
+# See https://www.omgubuntu.co.uk/2022/04/how-to-install-firefox-deb-apt-ubuntu-22-04
+RUN \
+     add-apt-repository -y ppa:mozillateam/ppa \
+  && echo -e "Package: *\nPin: release o=LP-PPA-mozillateam\nPin-Priority: 1001\n" > /etc/apt/preferences.d/mozilla-firefox \
+  && apt-get update \
+  && apt-get install -y firefox
+
+RUN echo -e "Package: *\nPin: release o=LP-PPA-mozillateam\nPin-Priority: 1001\n" > /etc/apt/preferences.d/mozilla-firefox && cat /etc/apt/preferences.d/mozilla-firefox
+
 
 # chromium-browser is used in headless mode for printing Jupyter notebooks.
 # However, Ubuntu doesn't support installing it anymore except via a "snap" package,
@@ -273,7 +286,7 @@ RUN \
 # in Ubuntu is just a tiny wrapper that says "use our snap".
 RUN \
     add-apt-repository -y ppa:saiarcot895/chromium-beta \
- && apt update \
+ && apt-get update \
  && DEBIAN_FRONTEND=noninteractive apt install -y chromium-browser
 
 # VSCode code-server web application

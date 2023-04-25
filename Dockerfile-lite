@@ -53,7 +53,8 @@ RUN \
        jq \
        bsdmainutils \
        postgresql \
-       nodejs
+       nodejs \
+       npm
 
 RUN echo "umask 077" >> /etc/bash.bashrc
 

@@ -15,3 +15,6 @@ page, and do two things:
 Once this is done you'll see a ChatGPT box on the landing page and there
 is ChatGPT integration in any CoCalc chatroom, which you can use via @chatgpt.
 
+## Costs
+
+_**It's suprisingly affordable!**_  There is a [discussion here](https://github.com/sagemathinc/cocalc-docker/discussions/188) about costs.

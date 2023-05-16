@@ -221,7 +221,7 @@ RUN \
 #  && its --install=global
 
 # Install Julia
-ARG JULIA=1.8.5
+ARG JULIA=1.9.0
 RUN cd /tmp \
  && export ARCH1=`uname -m | sed s/x86_64/x64/` \
  && export ARCH2=`uname -m` \
@@ -322,8 +322,13 @@ COPY bashrc /root/.bashrc
 
 
 # CoCalc Jupyter widgets rely on these:
-RUN \
-  pip3 install --no-cache-dir ipyleaflet
+RUN pip3 install --no-cache-dir ipyleaflet
+RUN sage -pip install --no-cache-dir ipyleaflet
+
+# Useful for nbgrader
+RUN pip3 install nose
+
+RUN sage -pip install node
 
 # The Jupyter kernel that gets auto-installed with some other jupyter Ubuntu packages
 # doesn't have some nice options regarding inline matplotlib (and possibly others), so

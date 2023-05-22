@@ -78,7 +78,7 @@ NOTES:
 
 - CoCalc will NOT work over insecure port 80.  A previous version of these directions suggested using -p 80:80 above and visiting http://localhost, [which will not work](https://github.com/sagemathinc/cocalc/issues/2000).
 
-- If you are using Microsoft Windows, instead make a docker volume and use that for storage:
+- If you are using Microsoft Windows (or possibly MacOS!), instead make a docker volume and use that for storage for vastly better performance:
   ```
   docker volume create cocalc-volume
   docker run --name=cocalc -d -v cocalc-volume:/projects -p 443:443 sagemathinc/cocalc-v2

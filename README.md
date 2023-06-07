@@ -30,7 +30,7 @@ If the above doesn't work due to something else already using port 443 or you wa
  docker run --name=cocalc -d -v ~/cocalc:/projects -p 7100:443 sagemathinc/cocalc-v2-lite-aarch64
  ```
 
-**VERSION NOTE:** The sagemathinc/cocalc Docker image is currently not backward compatible with sagemathinc/cocalc\-v2, since sagemathinc/cocalc uses the deprecated PostgreSQL version 10, whereas cocalc\-v2 uses PostgreSQL version 14, and we haven't implemented an automated upgrade path yet. 
+**VERSION NOTE:** The sagemathinc/cocalc Docker image is currently not backward compatible with sagemathinc/cocalc\-v2, since sagemathinc/cocalc uses the deprecated PostgreSQL version 10, whereas cocalc\-v2 uses PostgreSQL version 14, and we haven't implemented an automated upgrade path yet.  That said, [using the standard pg_dumpall and psql tools to export and import the database seems to work fine](https://github.com/sagemathinc/cocalc-docker/issues/193).
 
 ## Connecting to https://localhost
 

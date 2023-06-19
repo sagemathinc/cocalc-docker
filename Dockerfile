@@ -155,7 +155,7 @@ RUN    adduser --quiet --shell /bin/bash --gecos "Sage user,101,," --disabled-pa
 # correctly and the build will fail!
 RUN    mkdir -p /usr/local/sage \
     && chown -R sage:sage /usr/local/sage \
-    && sudo -H -E -u sage /usr/sage-install-scripts/install_sage.sh /usr/local/ 9.8 \
+    && sudo -H -E -u sage /usr/sage-install-scripts/install_sage.sh /usr/local/ 10.0 \
     && sync
 
 RUN /usr/sage-install-scripts/post_install_sage.sh /usr/local/ && rm -rf /tmp/* && sync

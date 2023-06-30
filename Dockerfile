@@ -57,7 +57,9 @@ RUN \
        nano \
        alpine-pico \
        parallel \
-       primesieve
+       primesieve \
+       earlyoom \
+       macaulay2
 
  RUN \
      apt-get update \
@@ -135,6 +137,13 @@ RUN \
 RUN \
    apt-get update \
   && DEBIAN_FRONTEND=noninteractive apt-get install -y tachyon
+
+# install the latest pari-gp
+RUN \
+   wget https://pari.math.u-bordeaux.fr/pub/pari/unix/pari.tgz \
+   && tar xf pari.tgz \
+   && cd pari-* \
+   && MAKE="make -j$(cat /proc/cpuinfo | grep processor | wc -l)" ./Configure --prefix=/usr/local && make install
 
 # Build and install Sage -- see https://github.com/sagemath/docker-images
 COPY scripts/ /usr/sage-install-scripts/
@@ -250,6 +259,8 @@ RUN mv "$HOME/.local/share/jupyter/kernels/julia"* "/usr/local/share/jupyter/ker
 # Also add Pluto system-wide, since we'll likely support it soon in cocalc, and also
 # Nemo and Hecke (some math software).
 RUN echo 'using Pkg; Pkg.add("Pluto"); Pkg.add("Nemo"); Pkg.add("Hecke"); Pkg.add("Oscar")' | JULIA_DEPOT_PATH=/opt/julia/local/share/julia JULIA_PKG=/opt/julia/local/share/julia julia
+# Distributions, Random, HomotopyContinuation
+RUN echo 'using Pkg; Pkg.add("Distributions"); Pkg.add("Random"); Pkg.add("HomotopyContinuation")' | JULIA_DEPOT_PATH=/opt/julia/local/share/julia JULIA_PKG=/opt/julia/local/share/julia julia
 
 
 

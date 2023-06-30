@@ -56,7 +56,8 @@ RUN \
        tidy \
        nano \
        alpine-pico \
-       parallel
+       parallel \
+       primesieve
 
  RUN \
      apt-get update \

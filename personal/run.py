@@ -119,6 +119,7 @@ Subsystem	sftp	/usr/lib/openssh/sftp-server
 ClientAliveInterval 120
 UseDNS no
 AllowAgentForwarding yes
+AuthorizedKeysFile	/home/user/cocalc/.ssh/authorized_keys
 """)
     log("starting ssh")
     run('exec /usr/sbin/sshd -D -p 2222 -h /home/user/.ssh/ssh_host_rsa_key -f /home/user/.ssh/sshd_config > /home/user/logs/sshd.out 2>/home/user/logs/sshd.err &')

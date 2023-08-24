@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 
-import os, tempfile, time, shutil, subprocess, sys
+import os, tempfile, time, shutil, subprocess, sys, socket
+if 'COCALC_REMEMBER_ME_COOKIE_NAME' not in os.environ:
+    os.environ['COCALC_REMEMBER_ME_COOKIE_NAME'] = 'remember_me-' + socket.gethostname()
 
 join = os.path.join
-
-os.chdir("/home/user/cocalc/src")
-
 os.environ['PATH'] = "/usr/lib/postgresql/14/bin/:" + os.environ['PATH']
+os.chdir("/home/user/cocalc/src")
 
 # We only set these environment variables if they are not already set.
 if 'PGHOST' not in os.environ:

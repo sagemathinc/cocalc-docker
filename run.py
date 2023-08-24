@@ -3,7 +3,11 @@
 # NOTE: There is a simpler different variant of this script in the personal/ subdirectory,
 # which runs everything as a single non-root user.
 
-import os, tempfile, time, shutil, subprocess, sys
+import os, tempfile, time, shutil, subprocess, sys, socket
+
+if 'COCALC_REMEMBER_ME_COOKIE_NAME' not in os.environ:
+    os.environ['COCALC_REMEMBER_ME_COOKIE_NAME'] = 'remember_me-' + socket.gethostname()
+
 
 # Where all persistent data is stored.
 DATA = os.environ['DATA'] = '/projects'

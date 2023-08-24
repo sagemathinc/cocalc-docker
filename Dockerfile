@@ -67,7 +67,8 @@ RUN \
        nodejs \
        npm \
        libxml2-dev \
-       libxslt-dev
+       libxslt-dev \
+       libfuse-dev
 
  RUN \
      apt-get update \
@@ -81,6 +82,7 @@ RUN \
        emacs \
        subversion \
        ssh \
+       sshfs \
        m4 \
        latexmk \
        libpq5 \

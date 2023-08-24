@@ -92,6 +92,8 @@ NOTES:
   docker run --name=cocalc -d -v ~/cocalc:/projects -v "/etc/timezone:/etc/timezone" -v "/etc/localtime:/etc/localtime" -p 443:443 sagemathinc/cocalc-v2
   ```
 
+- Here's a new [Step-by-Step Guide to Setting up Cocalc-Docker on a Custom Domain with a valid SSL Certificate](https://github.com/sagemathinc/cocalc-docker/discussions/200) in case you want to go beyond just running something locally on your laptop, and want to provide an integrated solution for your community.
+
 The above command will first download the image, then start CoCalc, storing your data in the directory `~/cocalc` on your computer. If you want to store your worksheets and edit history elsewhere, change `~/cocalc` to something else.  Once your local CoCalc is running, open your web browser to https://localhost.  (If you are using Microsoft Windows, instead open https://host.docker.internal/.)
 
 The docker container is called `cocalc` and you can refer to the container and use commands like:

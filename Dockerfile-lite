@@ -54,7 +54,8 @@ RUN \
        bsdmainutils \
        postgresql \
        nodejs \
-       npm
+       npm \
+       libfuse-dev
 
 RUN echo "umask 077" >> /etc/bash.bashrc
 

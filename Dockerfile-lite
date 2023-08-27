@@ -55,7 +55,8 @@ RUN \
        postgresql \
        nodejs \
        npm \
-       libfuse-dev
+       libfuse-dev \
+       pkg-config
 
 RUN echo "umask 077" >> /etc/bash.bashrc
 

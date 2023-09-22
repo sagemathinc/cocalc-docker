@@ -4,9 +4,9 @@
 # installs an ancient PostgreSQL 10 database, the R statistical software, SageMath
 # (built from source), and the Julia programming language. Finally, it installs
 # various Jupyter kernels, including ones for Python, Octave, and JavaScript. The
-# image is built on top of the Ubuntu 22.10 operating system.
+# image is built on top of the Ubuntu 22.04 operating system.
 
-ARG MYAPP_IMAGE=ubuntu:22.10
+ARG MYAPP_IMAGE=ubuntu:22.04
 FROM $MYAPP_IMAGE
 
 MAINTAINER William Stein <wstein@sagemath.com>
@@ -64,8 +64,6 @@ RUN \
        psmisc \
        rsync \
        tidy \
-       nodejs \
-       npm \
        libxml2-dev \
        libxslt-dev \
        libfuse-dev
@@ -211,17 +209,6 @@ RUN \
      apt-get update \
   && apt-get install -y aspell-*
 
-# Kernel for javascript (the node.js Jupyter kernel)
-RUN \
-     npm install --unsafe-perm -g ijavascript \
-  && ijsinstall --install=global
-
-# Kernel for Typescript -- commented out since seems flakie and
-# probably not generally interesting.
-#RUN \
-#     npm install --unsafe-perm -g itypescript \
-#  && its --install=global
-
 # Install Julia
 ARG JULIA=1.9.0
 RUN cd /tmp \
@@ -351,6 +338,21 @@ RUN \
 # Commit to checkout and build.
 ARG BRANCH=master
 ARG commit=HEAD
+
+# Install node v18
+RUN  apt-get remove -y nodejs libnode72 nodejs-doc \
+  && apt-get install -y ca-certificates curl gnupg \
+  && mkdir -p /etc/apt/keyrings \
+  && curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg \
+  && export NODE_MAJOR=18 \
+  && echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_$NODE_MAJOR.x nodistro main" | tee /etc/apt/sources.list.d/nodesource.list \
+  && apt-get update && apt-get install nodejs -y
+
+
+# Kernel for javascript (the node.js Jupyter kernel)
+RUN \
+     npm install --unsafe-perm -g ijavascript \
+  && ijsinstall --install=global
 
 # Pull latest source code for CoCalc and checkout requested commit (or HEAD),
 # install our Python libraries globally, then remove cocalc.  We only need it

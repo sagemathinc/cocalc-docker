@@ -59,7 +59,9 @@ RUN \
        parallel \
        primesieve \
        earlyoom \
-       macaulay2
+       macaulay2 \
+       libmpfr-dev
+
 
  RUN \
      apt-get update \

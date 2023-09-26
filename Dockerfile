@@ -388,6 +388,10 @@ RUN umask 022 && sage -pip install --upgrade /cocalc/src/smc_sagews/
 RUN umask 022 \
    && wget https://raw.githubusercontent.com/LMFDB/lmfdb/master/requirements.txt -O lmfdbreq.txt \
    && sage -pip install --upgrade -r lmfdbreq.txt
+# pycontrolledreduction
+RUN umask 022 \
+   sage -pip install --upgrade git+https://github.com/edgarcosta/pycontrolledreduction.git@master#egg=pycontrolledreduction
+
 
 # Install pnpm package manager that we now use instead of npm
 RUN umask 022 \

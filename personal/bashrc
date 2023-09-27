@@ -15,6 +15,7 @@ if [ -x /usr/bin/dircolors ]; then
 fi
 
 export PATH=/usr/lib/postgresql/14/bin/:$HOME/.local/bin:$HOME/cocalc/src/scripts:$PATH
-export PGHOST=/home/user/socket
-export PGUSER=smc
-export PGDATABASE=smc
+
+export PGHOST="${PGHOST:-/home/user/socket}"
+export PGUSER="${PGUSER:-smc}"
+export PGDATABASE="${PGDATABASE:-smc}"

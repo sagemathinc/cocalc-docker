@@ -2,65 +2,86 @@
 
 GitHub: https://github.com/sagemathinc/cocalc-docker
 
+Docs: [https://doc.cocalc.com/docker\-image.html](https://doc.cocalc.com/docker-image.html) 
+
 **Quickstart on a Linux server**
 
 1. Make sure you have at least **25GB disk space free and Docker installed.**
 2. Run
 
 ```sh
-docker run --name=cocalc -d -v ~/cocalc:/projects -p 443:443 sagemathinc/cocalc
+docker run --name=cocalc -d -v ~/cocalc:/projects -p 443:443 sagemathinc/cocalc-v2
 ```
+
+NOTE: There are also aarch64 images for Apple M1, and a "lite" version that is much smaller because
+it doesn't come with Sage, Latex, etc.  See https://hub.docker.com/u/sagemathinc for a list of images.
 
 3. Wait a few minutes for the image to pull, decompress and the container to start, then visit https://localhost.
 
-For other operating systems and way more details, see below.  But a quick note, if you are using aarch64 (e.g., Apple Silicon or Rasberry Pi 64-bit), use `sagemathinc/cocalc-aarch64` instead of `sagemathinc/cocalc` for a native binary!
+For other operating systems and way more details, see below.  But a quick note, if you are using aarch64 \(e.g., Apple Silicon or Rasberry Pi 64\-bit\), use `sagemathinc/cocalc-v2-aarch64` instead of `sagemathinc/cocalc-v2` for a native binary!
 
 ```sh
-docker run --name=cocalc -d -v ~/cocalc:/projects -p 443:443 sagemathinc/cocalc-aarch64
+docker run --name=cocalc -d -v ~/cocalc:/projects -p 443:443 sagemathinc/cocalc-v2-aarch64
 ```
 
-If the above doesn't work due to something else already using port 443 or you wanting to serve cocalc on a different port, you could use `-p 4043:443` instead.  There is extensive Docker documentation online.
+If the above doesn't work due to something else already using port 443 or you wanting to serve cocalc on a different port, you could use `-p 4043:443` instead.  There is extensive Docker documentation online.  For example the following runs the lite version of cocalc-docker on an Apple M1 serving on port 7100:
 
-## What is this?
+```sh
+ docker run --name=cocalc -d -v ~/cocalc:/projects -p 7100:443 sagemathinc/cocalc-v2-lite-aarch64
+ ```
+
+**VERSION NOTE:** The sagemathinc/cocalc Docker image is currently not backward compatible with sagemathinc/cocalc\-v2, since sagemathinc/cocalc uses the deprecated PostgreSQL version 10, whereas cocalc\-v2 uses PostgreSQL version 14, and we haven't implemented an automated upgrade path yet.  That said, [using the standard pg_dumpall and psql tools to export and import the database seems to work fine](https://github.com/sagemathinc/cocalc-docker/issues/193).
+
+## Connecting to https://localhost
+
+The default cocalc\-docker container of course has only a self\-signed ssl certificate.  Browsers have cracked down more and more on allowing
+connections to such servers.   Because cocalc\-docker is serving on localhost, you must explicitly tell your browser to allow the connection.
+Do a Google search for "chrome allow localhost https" to find out how; one result is [https://communicode.io/allow\-https\-localhost\-chrome/](https://communicode.io/allow-https-localhost-chrome/).
+
+## What is CoCalc\-Docker?
 
 **Run CoCalc for free for a small group on your own server or laptop!**
 
-This is a free open-source  multiuser CoCalc server that you can _**very easily**_ install on your own computer or server using Docker.  If you need something to install on a cluster of servers using Kubernetes, see [cocalc-kubernetes](https://github.com/sagemathinc/cocalc-kubernetes).
+This is a free open\-source  multiuser CoCalc server that you can _**very easily**_ install on your own computer or server using Docker.  If you need something to install on a cluster of servers using Kubernetes, see [cocalc\-cloud](https://doc.cocalc.com/cocalc-cloud.html).
 
 **LICENSE AND SUPPORT:**
 
-- Much of this code is licensed [under the AGPL](https://en.wikipedia.org/wiki/Affero_General_Public_License) condition to the [commons clause](https://commonsclause.com/) exception. If you would instead like a business-friendly MIT license instead, please contact [help@cocalc.com](help@cocalc.com), and we will sell you a 1-year license for $999, which includes some support (you can pay more for significant support).  We **do** have several happy paying customers as of September 2020, and cocalc-docker is very popular.
-- Join the [CoCalc Docker mailing list](https://groups.google.com/a/sagemath.com/group/cocalc-docker/subscribe) for news, updates and more.
-- [CoCalc mailing list](https://groups.google.com/forum/?fromgroups#!forum/cocalc) for general community support.
+- Much of this code is licensed [under the AGPL](https://en.wikipedia.org/wiki/Affero_General_Public_License) condition to the [commons clause](https://commonsclause.com/) exception. If you would instead like a business\-friendly MIT license instead, please contact [help@cocalc.com](mailto:help@cocalc.com), and we will sell you a 1\-year license for \$999, which includes some support \(you can pay more for significant support\).  We **do** have many happy paying customers, and cocalc\-docker is popular.
+- Visit the [CoCalc Docker discussion board](https://github.com/sagemathinc/cocalc-docker/discussions) for news, updates and more; there is also a more general
+  [CoCalc discussion board](https://github.com/sagemathinc/cocalc/discussions).
+- There is a specialized [CoCalc Docker mailing list](https://groups.google.com/a/sagemath.com/group/cocalc-docker/subscribe), and a more general
+  [CoCalc mailing list](https://groups.google.com/forum/?fromgroups#!forum/cocalc).
+- Read the [overview docs](https://doc.cocalc.com/docker-image.html).
 
 **SECURITY STATUS:**
 
 - This is _**not blatantly insecure**_ from outside attack: the database has a long random password, user accounts are separate, encrypted SSL communication is used by default, etc.
-- That said, **a determined user with an account can easily access or change files of other users in the same container!** Open ports are exposed to users for reading/writing to project files, these can be used by authenticated users for accessing any other project's open files. Requests should only connect to the main hub process, which proxies traffic to the raw server with an auth key created by the project's secret key changing on every project startup, see [Issue 45](https://github.com/sagemathinc/cocalc-docker/issues/45). Also see the related issues for adding a user auth token to all requests required for each separate sub module, including JupyterLab server [Issue 46](https://github.com/sagemathinc/cocalc-docker/issues/46) and classical Jupyter in an iframe [Issue 47](https://github.com/sagemathinc/cocalc-docker/issues/47).
+- That said, **a determined user with a CoCalc account could in theory easily access or change files of other users in the same container, and can definitely overload the server!** Open ports are exposed to users for reading/writing to project files, these can be used by authenticated users for accessing any other project's open files. Requests should only connect to the main hub process, which proxies traffic to the raw server with an auth key created by the project's secret key changing on every project startup, see [Issue 45](https://github.com/sagemathinc/cocalc-docker/issues/45). Also see the related issues for adding a user auth token to all requests required for each separate sub module, including JupyterLab server [Issue 46](https://github.com/sagemathinc/cocalc-docker/issues/46) and classical Jupyter in an iframe [Issue 47](https://github.com/sagemathinc/cocalc-docker/issues/47).
 - There is no quota on project resource usage, so users could easily crash the server both intentionally or accidentally by running arbitrary code, and could also overflow the storage container by creating excessive files.
-- Use this for personal use, behind a firewall, or with an account creation token, so that only other people you trust create accounts.  Don't make one of these publicly available with important data in it and no account creation token! See [issue 2031]( https://github.com/sagemathinc/cocalc/issues/2031).  Basically, use this only with people you trust.
-- See the [open docker-related CoCalc issues](https://github.com/sagemathinc/cocalc/issues?q=is%3Aopen+is%3Aissue+label%3AA-docker).
+- Use this for personal use, behind a firewall, or with an account creation token, so that only other people you trust create accounts.  Don't make one of these publicly available with important data in it and no account creation token! See [issue 2031](https://github.com/sagemathinc/cocalc/issues/2031).  Basically, use this only with people you trust.
+- See the [open docker\-related CoCalc issues](https://github.com/sagemathinc/cocalc/issues?q=is%3Aopen+is%3Aissue+label%3AA-docker).
+- The above security and resource problems are all solved by [cocalc\-cloud](https://doc.cocalc.com/cocalc-cloud.html).
 
 ## Instructions
 
 Install Docker on your computer (e.g., `apt-get install docker.io` on Ubuntu).   Make sure you have at least **25GB disk space free**, then type:
 
-    docker run --name=cocalc -d -v ~/cocalc:/projects -p 443:443 sagemathinc/cocalc
+    docker run --name=cocalc -d -v ~/cocalc:/projects -p 443:443 sagemathinc/cocalc-v2
 
 wait a few minutes for the image to pull, decompress and the container to start, then visit https://localhost.  (If you are using Microsoft Windows, instead open https://host.docker.internal/.) It is expected that you'll see a "Your connection is not private" warning, since you haven't set up a security certificate.  Click "Show advanced" and "Proceed to localhost (unsafe)".
 
 NOTES:
 
-- This Docker image only supports 64-bit Intel.  For ARM aarch64 (e.g., Apple Silicon) just replace sagemathinc/cocalc above by sagemathinc/cocalc-aarch64.
+- This Docker image only supports 64-bit Intel.  For ARM aarch64 (e.g., Apple Silicon) just replace sagemathinc/cocalc-v2 above by sagemathinc/cocalc-v2-aarch64.
 
 - If you get an error about the Docker daemon, instead run `sudo docker ...`.
 
 - CoCalc will NOT work over insecure port 80.  A previous version of these directions suggested using -p 80:80 above and visiting http://localhost, [which will not work](https://github.com/sagemathinc/cocalc/issues/2000).
 
-- If you are using Microsoft Windows, instead make a docker volume and use that for storage:
+- If you are using Microsoft Windows (or possibly MacOS!), instead make a docker volume and use that for storage for vastly better performance:
   ```
   docker volume create cocalc-volume
-  docker run --name=cocalc -d -v cocalc-volume:/projects -p 443:443 sagemathinc/cocalc
+  docker run --name=cocalc -d -v cocalc-volume:/projects -p 443:443 sagemathinc/cocalc-v2
   ```
 
 
@@ -68,8 +89,10 @@ NOTES:
 
 - If you are using Ubuntu as a host and would like the CoCalc instance to use your host's time and timezone, you can amend the run command as follows, which will use your host's timezone and localtime files inside the container:
   ```
-  docker run --name=cocalc -d -v ~/cocalc:/projects -v "/etc/timezone:/etc/timezone" -v "/etc/localtime:/etc/localtime" -p 443:443 sagemathinc/cocalc
+  docker run --name=cocalc -d -v ~/cocalc:/projects -v "/etc/timezone:/etc/timezone" -v "/etc/localtime:/etc/localtime" -p 443:443 sagemathinc/cocalc-v2
   ```
+
+- Here's a new [Step-by-Step Guide to Setting up Cocalc-Docker on a Custom Domain with a valid SSL Certificate](https://github.com/sagemathinc/cocalc-docker/discussions/200) in case you want to go beyond just running something locally on your laptop, and want to provide an integrated solution for your community.
 
 The above command will first download the image, then start CoCalc, storing your data in the directory `~/cocalc` on your computer. If you want to store your worksheets and edit history elsewhere, change `~/cocalc` to something else.  Once your local CoCalc is running, open your web browser to https://localhost.  (If you are using Microsoft Windows, instead open https://host.docker.internal/.)
 
@@ -100,7 +123,7 @@ If you want cocalc\-docker to serve everything with a custom base path, e.g., at
 #### (1) Set the BASE\_PATH environment variable:
 
 ```sh
-docker run -e BASE_PATH=/my/base/path --name=cocalc -d -v ~/cocalc:/projects -p 443:443 sagemathinc/cocalc
+docker run -e BASE_PATH=/my/base/path --name=cocalc -d -v ~/cocalc:/projects -p 443:443 sagemathinc/cocalc-v2
 ```
 
 This sets the base path correctly for most of CoCalc, but not for everything, unfortunately. 
@@ -136,8 +159,27 @@ We do much of the development of CoCalc itself on https://cocalc.com using a `BA
 Projects will stop by default if they are idle for 30 minutes.  Admins can manually increase this for any project.  If you want to completely disable the idle timeout functionality, set the `COCALC_NO_IDLE_TIMEOUT` environment variable.  Note that the user interface will still show an idle timeout -- it's just that it will have no impact.
 
 ```sh
-docker run -e COCALC_NO_IDLE_TIMEOUT=yes --name=cocalc -d -v ~/cocalc:/projects -p 443:443 sagemathinc/cocalc
+docker run -e COCALC_NO_IDLE_TIMEOUT=yes --name=cocalc -d -v ~/cocalc:/projects -p 443:443 sagemathinc/cocalc-v2
 ```
+
+### Running a server without SSL \-\- plain http
+
+By default, cocalc\-docker creates services on 3 ports: 
+
+- 22 \-\- ssh
+- 80 \-\- a simple http redirect that sends the user to https
+- 443 \-\- the main site, served over https, but by default with a self\-signed certificate
+
+If you would like the following configuration instead, pass the `--env NOSSL=true` option when you create the Docker container:
+
+- 22 \-\- ssh
+- 80 \-\- the main site, served over htttp
+
+```sh
+docker run --name=cocalc --env NOSSL=true -d -v ~/cocalc:/projects -p 8080:80 sagemathinc/cocalc-v2
+```
+
+You might want to do this if you are doing your ssl termination via some sort of external server, e.g., haproxy or nginx.
 
 ### Installing behind an Nginx Reverse Proxy
 
@@ -146,7 +188,7 @@ If you're running multiple sites from a single server using an Nginx reverse pro
 Instead of mapping port 443 on the container to 443 on the host, map 443 on the container to an arbitray unused port on the host, e.g. 9090:
 
 ```sh
-docker run --name=cocalc -d -v ~/cocalc:/projects -p 9090:443 sagemathinc/cocalc
+docker run --name=cocalc -d -v ~/cocalc:/projects -p 9090:443 sagemathinc/cocalc-v2
 ```
 
 In your nginx `sites-available` folder, create a file like the following called e.g. `mycocalc`:
@@ -190,7 +232,7 @@ I have tested a lot in November 2021, and did NOT have any problems with clock s
 
 #### Apple Silicon M1 / Linux aarch64/arm64 is fully supported via a different image
 
-I recently created an Apple Silicon Docker image. This runs natively, and does not require Rosetta2.  It may also work on Rasberry Pi or other aarch64 Linux systems.
+I regularly post an Apple Silicon Aarch64 cocalc-docker image. This runs natively.  It should also work on other aarch64 Linux systems.
 
 [https://hub.docker.com/r/sagemathinc/cocalc-aarch64](https://hub.docker.com/r/sagemathinc/cocalc-aarch64?ref=login)
 
@@ -238,7 +280,7 @@ You can run CoCalc locally on your Chromebook as long as it supports Crostini Li
 
 4. Install cocalc-docker:
    ```
-   sudo docker run --name=cocalc -d -v /cocalc:/projects -p 443:443 -p 80:80 sagemathinc/cocalc
+   sudo docker run --name=cocalc -d -v /cocalc:/projects -p 443:443 -p 80:80 sagemathinc/cocalc-v2
    ```
 
    Type `/sbin/ifconfig eth0|grep inet` in the terminal, and use whatever ip address is listed there -- e.g., for me it was https://100.115.92.198/
@@ -258,7 +300,7 @@ For **enhanced security**, make the container only listen on localhost:
 ```
 docker stop cocalc
 docker rm cocalc
-docker run --name=cocalc -d -v ~/cocalc:/projects -p  127.0.0.1:443:443 sagemathinc/cocalc
+docker run --name=cocalc -d -v ~/cocalc:/projects -p  127.0.0.1:443:443 sagemathinc/cocalc-v2
 ```
 
 Then the **only way** to access your CoCalc server is to type the following on your local computer:
@@ -269,40 +311,69 @@ and open your web browser to https://localhost:8080
 
 ### SSH into a project
 
-Instead of doing:
+**IMPORTANT**: _The ssh_ [directions for cocalc.com involving key management,](https://doc.cocalc.com/account/ssh.html) _etc., do not apply to cocalc\-docker._  [cocalc.com](http://cocalc.com) _uses an "ssh gateway", and uniform key management across all of your projects.  Cocalc\-docker doesn't implement any of that, and just does ssh access directly, in exactly the same standard way as a generic Linux install._
+
+In order to ssh into cocalc\-docker, you must expose port 22 of your cocalc\-docker container to the outside world.  To do that you have to create the container with the option `-p <your ip address>:2222:22` \(say\).  Thus, instead of doing:
 
 ```
-docker run --name=cocalc -d -v ~/cocalc:/projects -p 443:443 sagemathinc/cocalc
+docker run --name=cocalc -d -v ~/cocalc:/projects -p 443:443 sagemathinc/cocalc-v2
 ```
 
-do this:
+do this instead:
 
 ```
-docker run --name=cocalc -d -v ~/cocalc:/projects -p 443:443 -p <your ip address>:2222:22  sagemathinc/cocalc
+docker run --name=cocalc -d -v ~/cocalc:/projects -p 443:443 -p <your ip address>:2222:22  sagemathinc/cocalc-v2
 ```
 
-Then you can do:
+NOTES:
+
+- You can use a different port instead of port 2222.  That's just an arbitrary port that you'll ssh to \(i.e., you pass `-p 2222` to ssh.\)
+
+- If you have an existing cocalc\-docker, and just want to expose port 22 without otherwise changing it, that is a massive pain \-\- that sort of dynamic reconfiguration is just not something that Docker is any good at.  Instead, your best bet is to stop and delete that cocalc\-docker and create a new one.  Hopefully you are using the `-v` option, so all your data is stored on your filesystem, rather than in the Docker container!
+
+Then you can do the following, _but it won't succeed until you configure the_ _`.ssh`_ _directory in your project, as explained below:_
 
 ```
-ssh projectid@<your ip address> -p 2222
+~$ ssh projectid@<your ip address> -p 2222
 ```
 
-Note that `project_id` is the hex id string for the project *without hyphens*. One way to show project id in this format is to open a .term file in the project and run this command: (This only works in CoCalc in Docker; USER is set differently in production CoCalc.)
+Note that `projectid` is the hex id string for the project _without hyphens_. One way to show the project id in this format is to open a .term file in your CoCalc project and run the following command:
 
 ```
-echo $USER
+~$ echo $USER
 ```
 
-To use SSH key authentication with the Docker container, have your private key file in the usual place in the host computer, for example `~/.ssh/.id_cocalc`, and copy the matching public key into your project's home directory. For example, you could do the following in a .term in your project:
+To use SSH key authentication with the Docker container, have your private key file in the usual place in the host computer, for example `~/.ssh/.id_ed25519`, and copy the matching public key into your project's home directory. For example, you could do the following in a .term in your project:
 
 ```
-cd
-mkdir .ssh
-chmod 700 .ssh
-vi .ssh/authorized_keys
+~$ cd
+~$ mkdir .ssh
+~$ vi .ssh/authorized_keys
 ... paste in contents of ~/.ssh/id_cocalc.pub from host computer ...
-chmod 600 .ssh/authorized_keys
 ```
+
+After doing that, you can then ssh to your project. Here's a less abstract example showing what this looks like.
+
+```sh
+wstein@studio ~ % docker run --name=cocalc-lite-test -d -p 127.0.0.1:4043:443 -p 127.0.0.1:2022:22 sagemathinc/cocalc-v2-lite-aarch64
+wstein@studio ~ % more ~/.ssh/id_ed25519.pub
+ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIA1bwpB7b7TVIexZxW003FCbDqzyFurSwZlljmT7sWzo wstein@studio
+# I then sign in via my web browser and create a project, and make the above key the 
+# contents of ~/.ssh/authorized_keys inside my project. After doing that, the following works:
+wstein@studio ~ % ssh 65b5a3c0e4d046329854f3d3db725f0b@localhost -p 2022
+The authenticity of host '[localhost]:2022 ([127.0.0.1]:2022)' [...]
+Are you sure you want to continue connecting (yes/no/[fingerprint])? yes [...]
+Welcome to Ubuntu 22.04.1 LTS (GNU/Linux 5.10.124-linuxkit aarch64)
+[...]
+~$ hostname
+6456fb9c78a8
+~$ echo $USER
+65b5a3c0e4d046329854f3d3db725f0b
+~$ more .ssh/authorized_keys
+ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIA1bwpB7b7TVIexZxW003FCbDqzyFurSwZlljmT7sWzo wstein@Williams-Mac-Studio.local
+```
+
+To **use rsync** to copy files to your project, make sure to include the `-e 'ssh -p 2222'` option \([more discussion](https://stackoverflow.com/questions/4549945/is-it-possible-to-specify-a-different-ssh-port-when-using-rsync)\).
 
 ### Make a user an admin
 
@@ -325,12 +396,12 @@ root@17fecb49c5c2:/cocalc/src/scripts# more ./make-user-admin
 echo "update accounts set groups='{admin}' where email_address='$1'" | psql
 ```
 
-As you can see, aside from some error checking, the entire script is just a 1-line PostgreSQL query.If you know basic SQL, you can  very easily do all kinds of interesting things.If you type `psql` as root, you'll get the PostgreSQL shell connected to the database for CoCalc.Type `\d` to see the tables, and `\d tablename` for more about a particular table.  For example,typing `\d accounts` shows all the fields in the accounts table, and groups is one of them.Here's [where in the source code](https://github.com/sagemathinc/cocalc/tree/master/src/smc-util/db-schema) ofCoCalc itself all of these database tables are defined.    In any case, being aware of all this can be very helpfulif you want to do some batch action, e.g., :
+As you can see, aside from some error checking, the entire script is just a 1-line PostgreSQL query.  If you know basic SQL, you can  very easily do all kinds of interesting things.If you type `psql` as root, you'll get the PostgreSQL shell connected to the database for CoCalc.  Type `\d` to see the tables, and `\d tablename` for more about a particular table.  For example,typing `\d accounts` shows all the fields in the accounts table, and groups is one of them.Here's [where in the source code](https://github.com/sagemathinc/cocalc/tree/master/src/smc-util/db-schema) ofCoCalc itself all of these database tables are defined.    In any case, being aware of all this can be very helpfulif you want to do some batch action, e.g., :
 
 - delete all accounts that are old or inactive
 - query to get the status of projects or accounts
 
-### Make a _project_ have sudo access
+### Make a _project_ have sudo access (root with no password)
 
 You can also make it so that running `sudo su` in a CoCalc terminal allows a project to gain root access.  First as above, from outside of CoCalc, do`docker exec -it cocalc bash`, then type `visudo`:
 
@@ -423,6 +494,15 @@ $ setenforce 1
 
 -- via [discussion](https://groups.google.com/forum/#!msg/cocalc/nhtbraq1_X4/QTlBy3opBAAJ)
 
+### More docs
+
+See the [docs directory](./docs) for some additional documentation.
+
+- [ChatGPT Integration](./docs/chatgpt.md)
+- [Using an External PostreSQL Server](./docs/external-postgresql.md)
+- [Personal Mode](./docs/personal/)
+- [Troubleshooting](./docs/troubleshooting.md)
+
 ## Your data
 
 If you started the container as above, there will be a directory ~/cocalc on your host computer that contains **all** data and files related to your projects and users -- go ahead and verify that it is there before upgrading. It might look like this:
@@ -434,21 +514,31 @@ be889c14-dc96-4538-989b-4117ffe84148	postgres    conf
 
 The directory `postgres` contains the database files, so all projects, users, file editing history, etc. The directory conf contains some secrets and log files. There will also be one directory (like `be889c14-dc96-4538-989b-4117ffe84148`) for each project that is created.
 
+### External PostgreSQL server
+
+CoCalc\-Docker includes a PostgreSQL server.  However, you can also [use your own external PostgreSQL server](./docs/external-postgresql.md).
+
 ## Upgrade
+
+**WARNING \(APRIL 2023\):** _The sagemathinc/cocalc Docker image is currently_ _**not**_ _backward compatible with sagemathinc/cocalc\-v2, since sagemathinc/cocalc uses the deprecated PostgreSQL version 10, whereas cocalc\-v2 uses PostgreSQL version 14, and we haven't implemented an automated upgrade path yet._ 
+
+New images are released regularly, as you can see [on the SageMath, Inc. Dockerhub page](https://hub.docker.com/u/sagemathinc).
 
 To get the newest image, do this (which will take some time):
 
 ```
-docker pull  sagemathinc/cocalc
+docker pull  sagemathinc/cocalc-v2
 ```
 
 Once done, you can delete and recreate your CoCalc container: (This will not delete any of your project or user data, which you confirmed above is in ~/cocalc.)
 
-    docker stop cocalc
-    docker rm cocalc
-    docker run --name=cocalc -d -v ~/cocalc:/projects -p 443:443 sagemathinc/cocalc
+```
+docker stop cocalc
+docker rm cocalc
+docker run --name=cocalc -d -v ~/cocalc:/projects -p 443:443 sagemathinc/cocalc-v2
+```
 
-Now visit https://localhost to see your upgraded server.
+Now visit https://localhost to see your upgraded server.  If you're usin aarch64 \(e.g., M1 Mac\), be sure to use `sagemathinc/cocalc-v2-aarch64` instead.
 
 #### Upgrade just the CoCalc source code (potentially tricky)
 
@@ -464,6 +554,10 @@ root@...:/cocalc/src# npm run make
 ```
 
 This should take about 15 minutes.  It could randomly fail if some npm package is temporarily not available; if that happens, try again.   Once it finishes successfully, stop your container, then start it again.   Upgrading this way does not upgrade any system-wide Ubuntu packages or configuration, so it might result in a broken Docker container.  In that case, your data should be fine, and you can upgrade as described in the section above.
+
+## Cocalc\-Personal
+
+There is a [minimal version of cocalc\-docker](./docs/personal/README.md) that is built to run in personal mode, in which **absolutely everything in the container runs as a single non\-root user named** **`user.`** 
 
 ## Adding custom software to your CoCalc instance
 
@@ -495,37 +589,32 @@ Additional notes:
 
 ## Troubleshooting
 
-- [A short guide](./TROUBLESHOOTING.md)
+- [A short guide](./docs/troubleshooting.md)
 
-## Build
+## Building your own Docker image
 
-This section is for CoCalc developers.
+The cocalc\-docker images are _**not**_ some black box images that are built in some mysterious way. You can see exactly what recipe is used to build them by looking at [Dockerfile](./Dockerfile). Moreover, you can modify Dockerfile if you want and build your own image.
 
-Build the image:
+It is easy \(but time consuming\) to build the cocalc\-docker image from scratch.  We do this regularly using the `update-the-build-stage-0.sh` scripts, e.g., for x86\_64:
 
-```
-make build-full   # or make build
-```
-
-Run the image (to test):
-
-```
-make run
+```sh
+$ cd x86_64
+$ ./update-the-build-stage-0.sh
 ```
 
-How I pushed this:
+NOTE: Depending on how you have Docker setup, you might need to instead do this:  `sudo ./update-the-build-stage-0.sh`
 
-```
-docker tag smc:latest sagemathinc/cocalc
-docker login --username=sagemathinc
-docker push  sagemathinc/cocalc
-```
+There are several other variants of this script, for personal and lite mode, and for aarch64 \(e.g., Apple Silicon\).
 
-Also to build at a specific commit:
+This script is short and you should read it to see what it does. 
 
-```
-docker build --build-arg commit=121b564a6b08942849372b9ffdcdddd7194b3e89 -t smc .
-```
+I personally also do ./update\-the\-build\-stage\-1.sh, to also push my image remotely, but that should _**not**_ work for you without some changes, and you probably don't need to do that anyways. 
+
+Some reasons to build your own image:
+
+- You want to run the most up\-to\-date version of the [cocalc source code](https://github.com/sagemathinc/cocalc), or your own special branch. 
+- You want to change what software is installed in your cocalc\-docker image, e.g., remove Julia and add something else like Tensorflow that we don't include by default.
+- You want the build of SageMath to be optimized for your hardware.  Building cocalc\-docker from source also builds Sagemath from source, and it's more likely to work well on your hardware if you build it on your hardware.   This can avoid, e.g., "ILLEGAL INSTRUCTION" issues on old machines.
 
 ## Adding Tensorflow-GPU support
 

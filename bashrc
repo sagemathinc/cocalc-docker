@@ -15,6 +15,6 @@ if [ -x /usr/bin/dircolors ]; then
 fi
 
 
-export PGHOST=/projects/postgres/data/socket
-export PGUSER=smc
-export PGDATABASE=smc
+export PGHOST="${PGHOST:-/projects/postgres/data/socket}"
+export PGUSER="${PGUSER:-smc}"
+export PGDATABASE="${PGDATABASE:-smc}"

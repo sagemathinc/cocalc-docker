@@ -1,3 +1,11 @@
+# This builds a Docker image for CoCalc, which is an online platform for
+# collaborative mathematical computation. It installs software for CoCalc
+# including latex, pandoc, tmux, flex, bison, and various other packages. It also
+# installs an ancient PostgreSQL 10 database, the R statistical software, SageMath
+# (built from source), and the Julia programming language. Finally, it installs
+# various Jupyter kernels, including ones for Python, Octave, and JavaScript. The
+# image is built on top of the Ubuntu 22.04 operating system.
+
 ARG MYAPP_IMAGE=ubuntu:22.04
 FROM $MYAPP_IMAGE
 
@@ -26,6 +34,7 @@ RUN \
        texlive-xetex \
        texlive-luatex \
        texlive-bibtex-extra \
+       texlive-science \
        liblog-log4perl-perl
 
 RUN \
@@ -47,6 +56,7 @@ RUN \
        python3 \
        python2 \
        python3-pip \
+       python3-pandas \
        make \
        cmake \
        g++ \
@@ -60,13 +70,16 @@ RUN \
        primesieve \
        earlyoom \
        macaulay2 \
-       libmpfr-dev
-
+       libmpfr-dev \
+       libxml2-dev \
+       libxslt-dev \
+       libfuse-dev
 
  RUN \
      apt-get update \
   && DEBIAN_FRONTEND=noninteractive apt-get install -y \
        vim \
+       neovim \
        inetutils-ping \
        lynx \
        telnet \
@@ -74,6 +87,7 @@ RUN \
        emacs \
        subversion \
        ssh \
+       sshfs \
        m4 \
        latexmk \
        libpq5 \
@@ -107,18 +121,10 @@ RUN \
        libtool \
        tcl \
        vim \
-       zip
-
-# We stick with PostgreSQL 10 for now, to avoid any issues with users having to
-# update to an incompatible version 12.  We don't use postgresql-12 features *yet*,
-# and won't upgrade until we need to or it becomes a security liability.  Note that
-# PostgreSQL 10 is officially supported until November 10, 2022 according to
-# https://www.postgresql.org/support/versioning/
-RUN \
-     sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list' \
-  && wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add - \
-  && apt-get update \
-  && apt-get install -y  postgresql-10
+       neovim \
+       zip \
+       bsdmainutils \
+       postgresql
 
 
 # Install the R statistical software.  We do NOT use a custom repo, etc., as
@@ -127,7 +133,7 @@ RUN \
 # the latest R, please install it yourself.
 RUN \
   apt-get update \
-  && apt-get install -y r-base
+  && apt-get install -y r-base r-cran-tidyverse
 
 # These are specifically packages that we install since building them as
 # part of Sage can be problematic (e.g., on aarch64).  Dima encouraged me
@@ -163,7 +169,7 @@ RUN    adduser --quiet --shell /bin/bash --gecos "Sage user,101,," --disabled-pa
 # correctly and the build will fail!
 RUN    mkdir -p /usr/local/sage \
     && chown -R sage:sage /usr/local/sage \
-    && sudo -H -E -u sage /usr/sage-install-scripts/install_sage.sh /usr/local/ 9.7 \
+    && sudo -H -E -u sage /usr/sage-install-scripts/install_sage.sh /usr/local/ 10.1 \
     && sync
 
 RUN /usr/sage-install-scripts/post_install_sage.sh /usr/local/ && rm -rf /tmp/* && sync
@@ -217,25 +223,8 @@ RUN \
      apt-get update \
   && apt-get install -y aspell-*
 
-RUN \
-     wget -qO- https://deb.nodesource.com/setup_16.x | bash - \
-  && apt-get install -y nodejs libxml2-dev libxslt-dev \
-  && /usr/bin/npm install -g npm
-
-
-# Kernel for javascript (the node.js Jupyter kernel)
-RUN \
-     npm install --unsafe-perm -g ijavascript \
-  && ijsinstall --install=global
-
-# Kernel for Typescript -- commented out since seems flakie and
-# probably not generally interesting.
-#RUN \
-#     npm install --unsafe-perm -g itypescript \
-#  && its --install=global
-
 # Install Julia
-ARG JULIA=1.8.1
+ARG JULIA=1.9.0
 RUN cd /tmp \
  && export ARCH1=`uname -m | sed s/x86_64/x64/` \
  && export ARCH2=`uname -m` \
@@ -295,8 +284,21 @@ RUN \
 RUN \
      apt-get update \
   && DEBIAN_FRONTEND=noninteractive apt-get install -y x11-apps dbus-x11 gnome-terminal \
-     vim-gtk lyx libreoffice inkscape gimp firefox texstudio evince mesa-utils \
+     vim-gtk3 lyx libreoffice inkscape gimp texstudio evince mesa-utils \
      xdotool xclip x11-xkb-utils
+
+# installing firefox from Ubuntu official is no longer possible as of Ubuntu 22.10
+# do to snap bS (WTF?).
+# So we get an official image from Mozilla:
+# See https://www.omgubuntu.co.uk/2022/04/how-to-install-firefox-deb-apt-ubuntu-22-04
+RUN \
+     add-apt-repository -y ppa:mozillateam/ppa \
+  && echo -e "Package: *\nPin: release o=LP-PPA-mozillateam\nPin-Priority: 1001\n" > /etc/apt/preferences.d/mozilla-firefox \
+  && apt-get update \
+  && apt-get install -y firefox
+
+RUN echo -e "Package: *\nPin: release o=LP-PPA-mozillateam\nPin-Priority: 1001\n" > /etc/apt/preferences.d/mozilla-firefox && cat /etc/apt/preferences.d/mozilla-firefox
+
 
 # chromium-browser is used in headless mode for printing Jupyter notebooks.
 # However, Ubuntu doesn't support installing it anymore except via a "snap" package,
@@ -307,7 +309,7 @@ RUN \
 # in Ubuntu is just a tiny wrapper that says "use our snap".
 RUN \
     add-apt-repository -y ppa:saiarcot895/chromium-beta \
- && apt update \
+ && apt-get update \
  && DEBIAN_FRONTEND=noninteractive apt install -y chromium-browser
 
 # VSCode code-server web application
@@ -325,6 +327,9 @@ RUN echo "umask 077" >> /etc/bash.bashrc
 # Install some Jupyter kernel definitions
 COPY kernels /usr/local/share/jupyter/kernels
 
+# Bash jupyter kernel
+RUN umask 022 && pip install bash_kernel && python3 -m bash_kernel.install
+
 # Configure so that R kernel actually works -- see https://github.com/IRkernel/IRkernel/issues/388
 COPY kernels/ir/Rprofile.site /usr/local/sage/local/lib/R/etc/Rprofile.site
 
@@ -340,8 +345,13 @@ COPY bashrc /root/.bashrc
 
 
 # CoCalc Jupyter widgets rely on these:
-RUN \
-  pip3 install --no-cache-dir ipyleaflet
+RUN pip3 install --no-cache-dir ipyleaflet
+RUN sage -pip install --no-cache-dir ipyleaflet
+
+# Useful for nbgrader
+RUN pip3 install nose
+
+RUN sage -pip install node
 
 # The Jupyter kernel that gets auto-installed with some other jupyter Ubuntu packages
 # doesn't have some nice options regarding inline matplotlib (and possibly others), so
@@ -357,7 +367,7 @@ RUN ln -sf /usr/bin/yapf3 /usr/bin/yapf
 # Other pip3 packages
 # NOTE: Upgrading zmq is very important, or the Ubuntu version breaks everything..
 RUN \
-  pip3 install --upgrade --no-cache-dir  pandas plotly scipy  scikit-learn seaborn bokeh zmq k3d
+  pip3 install --upgrade --no-cache-dir  pandas plotly scipy  scikit-learn seaborn bokeh zmq k3d nose
 
 # so we have dig
 RUN apt-get install -y dnsutils
@@ -365,6 +375,21 @@ RUN apt-get install -y dnsutils
 # Commit to checkout and build.
 ARG BRANCH=master
 ARG commit=HEAD
+
+# Install node v18
+RUN  apt-get remove -y nodejs libnode72 nodejs-doc \
+  && apt-get install -y ca-certificates curl gnupg \
+  && mkdir -p /etc/apt/keyrings \
+  && curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg \
+  && export NODE_MAJOR=18 \
+  && echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_$NODE_MAJOR.x nodistro main" | tee /etc/apt/sources.list.d/nodesource.list \
+  && apt-get update && apt-get install nodejs -y
+
+
+# Kernel for javascript (the node.js Jupyter kernel)
+RUN \
+     npm install --unsafe-perm -g ijavascript \
+  && ijsinstall --install=global
 
 # Patch to disable smart indent
 COPY disable_smart_indent.patch /disable_smart_indent.patch

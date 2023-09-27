@@ -1,15 +1,26 @@
 #!/usr/bin/env python3
 
-import os, tempfile, time, shutil, subprocess, sys
+import os, tempfile, time, shutil, subprocess, sys, socket
+if 'COCALC_REMEMBER_ME_COOKIE_NAME' not in os.environ:
+    os.environ['COCALC_REMEMBER_ME_COOKIE_NAME'] = 'remember_me-' + socket.gethostname()
 
 join = os.path.join
-
+os.environ['PATH'] = "/usr/lib/postgresql/14/bin/:" + os.environ['PATH']
 os.chdir("/home/user/cocalc/src")
 
-os.environ['PATH'] = "/usr/lib/postgresql/14/bin/:" + os.environ['PATH']
-os.environ['PGHOST'] = "/home/user/socket"
-os.environ['PGUSER'] = os.environ['PGDATABASE'] = 'smc'
+# We only set these environment variables if they are not already set.
+if 'PGHOST' not in os.environ:
+    local_database = True
+    os.environ['PGHOST'] = "/home/user/socket"
+    if not os.path.exists(os.environ['PGHOST']):
+        os.makedirs(os.environ['PGHOST'])
+else:
+    local_database = False
 
+if 'PGUSER' not in os.environ:
+    os.environ['PGUSER'] = 'smc'
+if 'PGDATABASE' not in os.environ:
+    os.environ['PGDATABASE'] = 'smc'
 
 def log(*args):
     print("LOG:", *args)
@@ -75,27 +86,50 @@ def start_hub():
     log("start_hub")
     kill("cocalc-hub-server")
     # PORT here must match what is exposed in the Dockerfile-personal
-    run("mkdir -p /home/user/logs/ && cd packages/hub/ && unset DATA COCALC_ROOT BASE_PATH && PORT=5000 DEBUG='cocalc:*,-cocalc:silly:*',$DEBUG NODE_ENV=production NODE_OPTIONS='--max_old_space_size=16000' npx cocalc-hub-server --mode=single-user --all --hostname=0.0.0.0 --personal > /home/user/logs/cocalc.out 2>/home/user/logs/cocalc.err &"
+    log("Hub logs are in /home/user/logs/")
+    run("mkdir -p /home/user/logs/ && cd packages/hub/ && unset DATA COCALC_ROOT BASE_PATH && PORT=5000 DEBUG='cocalc:*,-cocalc:silly:*',$DEBUG NODE_ENV=production NODE_OPTIONS='--max_old_space_size=16000' pnpm exec cocalc-hub-server --mode=single-user --all --hostname=0.0.0.0 --personal > /home/user/logs/cocalc.out 2>/home/user/logs/cocalc.err &"
         )
 
 
 def start_postgres():
     log("start_postgres")
+    log("start_postgres")
+    for var in ['PGHOST', 'PGUSER', 'PGDATABASE']:
+        log("start_postgres: %s=%s"%(var, os.environ[var]))
+    if not local_database:
+        log("start_postgres -- using external database so nothing to do")
+        return
+    log("Hub logs are in /home/user/logs/")
     run("mkdir -p /home/user/logs/ && cd /home/user/cocalc/src && npm run database > /home/user/logs/postgres.out 2>/home/user/logs/postgres.err & "
         )
 
+def start_ssh():
+    log("start_ssh")
+    log("ssh -- write conf file")
+    if not os.path.exists("/home/user/.ssh/sshd_config"):
+        open("/home/user/.ssh/sshd_config", "w").write(r"""
+ChallengeResponseAuthentication no
+UsePAM no
+X11Forwarding yes
+PrintMotd no
+AcceptEnv LANG LC_*
+PermitUserEnvironment yes
+# override default of no subsystems
+Subsystem	sftp	/usr/lib/openssh/sftp-server
+ClientAliveInterval 120
+UseDNS no
+AllowAgentForwarding yes
+AuthorizedKeysFile	/home/user/cocalc/.ssh/authorized_keys
+""")
+    log("starting ssh")
+    run('exec /usr/sbin/sshd -D -p 2222 -h /home/user/.ssh/ssh_host_rsa_key -f /home/user/.ssh/sshd_config > /home/user/logs/sshd.out 2>/home/user/logs/sshd.err &')
 
-def reset_project_state():
-    log(
-        "reset_project_state:",
-        "ensuring all projects are set as opened (not running) in the database"
-    )
-    try:
-        run("""echo "update projects set state='{\\"state\\":\\"opened\\"}';" | psql -t""")
-    except:
-        # Failure isn't non-fatal, since (1) it will fail if the database isn't done being
-        # created, and also this is just a convenience to reset the states.
-        log("reset_project_state failed (non-fatal)")
+
+def create_ssh_keys():
+    log("root_ssh_keys: creating them")
+    os.makedirs("/home/user/.ssh")
+    if not os.path.exists("/home/user/.ssh/ssh_host_rsa_key"):
+        run("ssh-keygen -t rsa -f /home/user/.ssh/ssh_host_rsa_key -N ''")
 
 
 
@@ -103,9 +137,10 @@ def main():
     init_projects_path()
     start_postgres()
     start_hub()
-    reset_project_state()
+    create_ssh_keys()
+    start_ssh()
     while True:
-        log("waiting for all subprocesses to complete...")
+        log("Started services.")
         os.wait()
 
 

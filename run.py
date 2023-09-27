@@ -1,18 +1,39 @@
 #!/usr/bin/env python3
 
-import os, tempfile, time, shutil, subprocess, sys
+# NOTE: There is a simpler different variant of this script in the personal/ subdirectory,
+# which runs everything as a single non-root user.
 
-# Where the PostgreSQL data is stored
-PGDATA = '/projects/postgres/data'
-PGHOST = os.path.join(PGDATA, 'socket')
+import os, tempfile, time, shutil, subprocess, sys, socket
+
+if 'COCALC_REMEMBER_ME_COOKIE_NAME' not in os.environ:
+    os.environ['COCALC_REMEMBER_ME_COOKIE_NAME'] = 'remember_me-' + socket.gethostname()
+
+
+# Where all persistent data is stored.
+DATA = os.environ['DATA'] = '/projects'
+
+# True if main server runs on port 80 without ssl
+# If not true, main server listens on port 443 with ssl, and
+# there is a redirect on port 80 to ssl.
+NOSSL = bool(os.environ.get("NOSSL"))
 
 # Only actually set the vars in case they aren't already set.
 # This makes it possible for users to use a custom remote PostgreSQL
-# server if they want...
+# server if they want.
 if 'PGHOST' not in os.environ:
+    local_database = True
+    # Where the PostgreSQL data is stored
+    PGDATA = os.path.join(DATA, 'postgres/data')
+    PGHOST = os.path.join(PGDATA, 'socket')
     os.environ['PGHOST'] = PGHOST
+else:
+    local_database = False
+
 if 'PGUSER' not in os.environ:
     os.environ['PGUSER'] = 'smc'
+
+if 'PGDATABASE' not in os.environ:
+    os.environ['PGDATABASE'] = 'smc'
 
 # ensure that everything we spawn has this umask, which is more secure.
 os.umask(0o077)
@@ -71,7 +92,7 @@ def kill(c):
 
 def self_signed_cert():
     log("self_signed_cert")
-    target = '/projects/conf/cert'
+    target = join(DATA, 'conf/cert')
     if not os.path.exists(target):
         os.makedirs(target)
     key = os.path.join(target, 'key.pem')
@@ -85,18 +106,18 @@ def self_signed_cert():
         key, '-subj', '/C=US/ST=WA/L=WA/O=Network/OU=IT Department/CN=cocalc'
     ],
         path=target)
-    run("chmod og-rwx /projects/conf")
+    run(f"chmod og-rwx {DATA}/conf")
 
 
 def init_projects_path():
-    log("init_projects_path: initialize /projects path")
-    if not os.path.exists('/projects'):
-        log("WARNING: container data will be EPHEMERAL -- in /projects")
-        os.makedirs('/projects')
+    log(f"init_projects_path: initialize {DATA} path")
+    if not os.path.exists(DATA):
+        log(f"WARNING: container data will be EPHEMERAL -- in {DATA}")
+        os.makedirs(DATA)
     # Ensure that users can see their own home directories:
-    os.system("chmod a+rx /projects")
+    os.system(f"chmod a+rx {DATA}")
     for path in ['conf']:
-        full_path = join('/projects', path)
+        full_path = join(DATA, path)
         if not os.path.exists(full_path):
             log("creating ", full_path)
             os.makedirs(full_path)
@@ -124,22 +145,32 @@ def start_hub():
     log("start_hub")
     kill("cocalc-hub-server")
     # NOTE: there's automatic logging to files that rotate as they get bigger...
-    run("mkdir -p /var/log/hub && cd /cocalc/src/packages/hub && pnpm run hub-docker-prod > /var/log/hub/out 2>/var/log/hub/err &")
+    if NOSSL:
+        target = "hub-docker-prod-nossl"
+    else:
+        target = "hub-docker-prod"
+    run(f"mkdir -p /var/log/hub && cd /cocalc/src/packages/hub && pnpm run {target} > /var/log/hub/out 2>/var/log/hub/err &")
 
 def postgres_perms():
     log("postgres_perms: ensuring postgres directory perms are sufficiently restrictive"
         )
-    run("mkdir -p /projects/postgres && chown -R sage. /projects/postgres && chmod og-rwx -R /projects/postgres"
+    run(f"mkdir -p {DATA}/postgres && chown -R sage. {DATA}/postgres && chmod og-rwx -R {DATA}/postgres"
         )
 
 
 def start_postgres():
     log("start_postgres")
+    for var in ['PGHOST', 'PGUSER', 'PGDATABASE']:
+        log("start_postgres: %s=%s"%(var, os.environ[var]))
+    if not local_database:
+        log("start_postgres -- using external database so nothing to do")
+        return
+    log("start_postgres -- using local database")
     postgres_perms()
     if not os.path.exists(
             PGDATA):  # see comments in smc/src/dev/project/start_postgres.py
         log("start_postgres:", "create data directory ", PGDATA)
-        run("sudo -u sage /usr/lib/postgresql/10/bin/pg_ctl init -D '%s'" %
+        run("sudo -u sage /usr/lib/postgresql/14/bin/pg_ctl init -D '%s'" %
             PGDATA)
         open(os.path.join(PGDATA, 'pg_hba.conf'),
              'w').write("local all all trust")
@@ -149,45 +180,38 @@ def start_postgres():
         open(conf, 'w').write(s)
         os.makedirs(PGHOST)
         postgres_perms()
-        run("sudo -u sage /usr/lib/postgresql/10/bin/postgres -D '%s' >%s/postgres.log 2>&1 &"
+        run("sudo -u sage /usr/lib/postgresql/14/bin/postgres -D '%s' >%s/postgres.log 2>&1 &"
             % (PGDATA, PGDATA))
         time.sleep(5)
-        run("sudo -u sage /usr/lib/postgresql/10/bin/createuser -h '%s' -sE smc"
+        run("sudo -u sage /usr/lib/postgresql/14/bin/createuser -h '%s' -sE smc"
             % PGHOST)
         run("sudo -u sage kill %s" %
             (open(os.path.join(PGDATA, 'postmaster.pid')).read().split()[0]))
         time.sleep(3)
     log("start_postgres:", "starting the server")
     os.system(
-        "sudo -u sage /usr/lib/postgresql/10/bin/postgres -D '%s' > /var/log/postgres.log 2>&1 &"
+        "sudo -u sage /usr/lib/postgresql/14/bin/postgres -D '%s' > /var/log/postgres.log 2>&1 &"
         % PGDATA)
 
 
-def reset_project_state():
-    log(
-        "reset_project_state:",
-        "ensuring all projects are set as opened (not running) in the database"
-    )
-    try:
-        run("""echo "update projects set state='{\\"state\\":\\"opened\\"}';" | psql -t""")
-    except:
-        # Failure isn't non-fatal, since (1) it will fail if the database isn't done being
-        # created, and also this is just a convenience to reset the states.
-        log("reset_project_state failed (non-fatal)")
-
+def init_log():
+    # see https://github.com/sagemathinc/cocalc-docker/issues/6
+    # These are two huge sparse files that break docker image-related commands,
+    # but are otherwise harmless.  Deleting them causes them to not be used.
+    run(['rm', '-f', '/var/log/faillog', '/var/log/lastlog'])
 
 
 def main():
     add_dummy()
+    init_log()
     init_projects_path()
     self_signed_cert()
     root_ssh_keys()
     start_ssh()
     start_postgres()
     start_hub()
-    reset_project_state()
     while True:
-        log("waiting for all subprocesses to complete...")
+        log("Started services.")
         os.wait()
 
 

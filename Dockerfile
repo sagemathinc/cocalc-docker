@@ -210,7 +210,7 @@ RUN \
   && apt-get install -y aspell-*
 
 # Install Julia
-ARG JULIA=1.9.0
+ARG JULIA=1.9.3
 RUN cd /tmp \
  && export ARCH1=`uname -m | sed s/x86_64/x64/` \
  && export ARCH2=`uname -m` \

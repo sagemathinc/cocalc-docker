@@ -520,7 +520,7 @@ CoCalc\-Docker includes a PostgreSQL server.  However, you can also [use your ow
 
 ## Upgrade
 
-**WARNING \(APRIL 2023\):** _The sagemathinc/cocalc Docker image is currently_ _**not**_ _backward compatible with sagemathinc/cocalc\-v2, since sagemathinc/cocalc uses the deprecated PostgreSQL version 10, whereas cocalc\-v2 uses PostgreSQL version 14, and we haven't implemented an automated upgrade path yet._ 
+**WARNING \(APRIL 2023\):** _The sagemathinc/cocalc Docker image is currently_ _**not**_ _backward compatible with sagemathinc/cocalc\-v2, since sagemathinc/cocalc uses the deprecated PostgreSQL version 10, whereas cocalc\-v2 uses PostgreSQL version 14, and we haven't implemented an automated upgrade path yet. Here are [user contributed instructions](https://github.com/sagemathinc/cocalc-docker/issues/193#issuecomment-1755974136) for manually upgrading the database, though._ 
 
 New images are released regularly, as you can see [on the SageMath, Inc. Dockerhub page](https://hub.docker.com/u/sagemathinc).
 

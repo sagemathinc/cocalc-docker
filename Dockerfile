@@ -293,6 +293,9 @@ RUN echo "umask 077" >> /etc/bash.bashrc
 # Install some Jupyter kernel definitions
 COPY kernels /usr/local/share/jupyter/kernels
 
+RUN  chmod -R a+r /usr/local/share/jupyter/kernels \
+  && chmod a+x /usr/local/share/jupyter/kernels/*
+
 # Bash jupyter kernel
 RUN umask 022 && pip install bash_kernel && python3 -m bash_kernel.install
 

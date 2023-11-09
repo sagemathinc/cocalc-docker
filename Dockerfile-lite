@@ -83,11 +83,6 @@ COPY login /etc/defaults/login
 COPY run.py /root/run.py
 COPY bashrc /root/.bashrc
 
-# The Jupyter kernel that gets auto-installed with some other jupyter Ubuntu packages
-# doesn't have some nice options regarding inline matplotlib (and possibly others), so
-# we delete it.
-RUN rm -rf /usr/share/jupyter/kernels/python3
-
 # Create this user, since the startup scripts assumes it exists, and user might install sage later.
 RUN    adduser --quiet --shell /bin/bash --gecos "Sage user,101,," --disabled-password sage \
     && chown -R sage:sage /home/sage/

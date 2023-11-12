@@ -54,7 +54,8 @@ RUN \
        bsdmainutils \
        postgresql \
        libfuse-dev \
-       pkg-config
+       pkg-config \
+       lz4
 
 # Install node v18.17.1
 # CRITICAL:  Do *NOT* upgrade nodejs to a newer version until the following is fixed !!!!!!

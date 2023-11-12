@@ -117,7 +117,8 @@ RUN \
        neovim \
        zip \
        bsdmainutils \
-       postgresql
+       postgresql \
+       lz4
 
 
 # Install the R statistical software.  We do NOT use a custom repo, etc., as

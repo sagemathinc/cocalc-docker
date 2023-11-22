@@ -145,7 +145,8 @@ def start_hub():
         target = "hub-docker-prod-nossl"
     else:
         target = "hub-docker-prod"
-    run(f"mkdir -p /var/log/hub && cd /cocalc/src/packages/hub && pnpm run {target} > /var/log/hub/out 2>/var/log/hub/err &")
+    run(f"mkdir -p /var/log/hub && cd /cocalc/src/packages/hub && source /usr/local/nvm/nvm.sh && pnpm run {target} > /var/log/hub/out 2>/var/log/hub/err &")
+    run("tail -F /var/log/hub/out /var/log/hub/err /var/log/hub/log &")
 
 def postgres_perms():
     log("postgres_perms: ensuring postgres directory perms are sufficiently restrictive"

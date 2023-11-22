@@ -18,3 +18,4 @@ fi
 export PGHOST="${PGHOST:-/projects/postgres/data/socket}"
 export PGUSER="${PGUSER:-smc}"
 export PGDATABASE="${PGDATABASE:-smc}"
+source /usr/local/nvm/nvm.sh

@@ -357,7 +357,7 @@ RUN umask 022 \
   && npm run make
 
 # And cleanup pnpm cache
-RUN pnpm store prune
+RUN source /usr/local/nvm/nvm.sh && pnpm store prune
 
 # Configuration
 COPY login.defs /etc/login.defs

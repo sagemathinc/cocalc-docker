@@ -2,7 +2,7 @@ DOCKER_USER=sagemathinc
 IMAGE_TAG=latest
 BRANCH=master
 
-BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ')
+BUILD_DATE=$(shell date -u +'%Y-%m-%dT%H:%M:%SZ')
 
 COMMIT=$(shell git ls-remote -h https://github.com/sagemathinc/cocalc $(BRANCH) | awk '{print $$1}')
 
@@ -25,9 +25,17 @@ push-cocalc-docker:
 assemble-cocalc-docker:
 	./multiarch.sh $(DOCKER_USER)/cocalc-docker $(IMAGE_TAG)
 
-lite:
-	exit 1
 
+pytorch:
+	cd src && docker build --build-arg commit=$(COMMIT) --build-arg BRANCH=$(BRANCH) --build-arg BUILD_DATE=$(BUILD_DATE) -t cocalc-docker-pytorch . -f pytorch/Dockerfile
+	docker tag cocalc-docker-pytorch $(DOCKER_USER)/cocalc-docker-pytorch:$(IMAGE_TAG)
 
-personal:
-	exit 1
+run-pytorch:
+	docker run --name=cocalc-docker-pytorch -d -p 127.0.0.1:4043:443 cocalc-docker-pytorch
+
+rm-pytorch:
+	docker stop cocalc-docker-pytorch
+	docker rm cocalc-docker-pytorch
+
+push-pytorch:
+	docker push $(DOCKER_USER)/cocalc-docker-pytorch:$(IMAGE_TAG)

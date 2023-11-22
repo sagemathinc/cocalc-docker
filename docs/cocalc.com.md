@@ -74,6 +74,9 @@ time docker run \
 
 It should take about 5\-15 minutes to download about 23GB from Dockerhub. This download is free since it is incoming data.
 
+*NOTE:* If you selected a compute server with a GPU, you need to also add `--gpus all` to the command above.  Also, none of the software pre-installed in CoCalc docker supports GPU's in any interesting way, so you may want to [build a custom cocalc-docker image](https://github.com/sagemathinc/cocalc-docker#adding-tensorflow-gpu-or-pytorch-gpu-support). 
+
+
 The above command runs the `sagmeathinc/cocalc-docker` container in daemon mode with the same network as the machine \(so if you open up web servers they are visible\), in privileged mode so that it is possible to do things like use advanced filesystems, and with the ability to run Dockeer from within the container. It also mounts som external filesystems.
 
 ![](images/paste-0.8019523521035041)

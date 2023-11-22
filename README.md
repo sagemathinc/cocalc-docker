@@ -633,31 +633,31 @@ Tue Jun 16 17:52:16 2020
 +-----------------------------------------------------------------------------+
 ```
 
-If the test running w/o problems, you can start to rebuild your own cocalc docker image with tensorflow support:
+If the test running w/o problems, you can start to rebuild your own cocalc docker image with tensorflow or pytorch support:
 
 ```
-cp  Dockerfile Dockerfile.gpu
+cp  Dockerfile Dockerfile-gpu
 ```
 
-Simply change first line in the Dockerfile.gpu
+Simply change first line in the Dockerfile-gpu
 
 ```
-#FROM ubuntu:22.04
-FROM nvcr.io/nvidia/tensorflow:23.08-tf2-py3
+#ARG MYAPP_IMAGE=ubuntu:22.04
+ARG MYAPP_IMAGE=nvcr.io/nvidia/tensorflow:23.08-tf2-py3
 ```
 
 to instead start with [the official Tensorflow image](https://catalog.ngc.nvidia.com/orgs/nvidia/containers/tensorflow).
 For [the official PyTorch image](https://catalog.ngc.nvidia.com/orgs/nvidia/containers/pytorch), use:
 
 ```
-#FROM ubuntu:22.04
-FROM nvcr.io/nvidia/pytorch:23.10-py3
+#ARG MYAPP_IMAGE=ubuntu:22.04
+ARG MYAPP_IMAGE=nvcr.io/nvidia/pytorch:23.10-py3
 ```
 
 Then rebuild your image:
 
 ```
-docker build  -t cocalc-gpu -f Dockerfile.gpu .
+docker build  -t cocalc-gpu -f Dockerfile-gpu .
 ```
 
 Run it with GPU support.

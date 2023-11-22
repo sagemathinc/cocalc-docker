@@ -1,10 +1,11 @@
 # This builds a Docker image for CoCalc, which is an online platform for
 # collaborative mathematical computation. It installs software for CoCalc
 # including latex, pandoc, tmux, flex, bison, and various other packages. It also
-# installs an ancient PostgreSQL 10 database, the R statistical software, SageMath
-# (built from source), and the Julia programming language. Finally, it installs
+# the R statistical software, SageMath (copying from another Docker build), and
+# the Julia programming language. Finally, it installs
 # various Jupyter kernels, including ones for Python, Octave, and JavaScript. The
 # image is built on top of the Ubuntu 22.04 operating system.
+
 
 ARG MYAPP_IMAGE=ubuntu:22.04
 FROM $MYAPP_IMAGE
@@ -140,37 +141,32 @@ RUN \
    apt-get update \
   && DEBIAN_FRONTEND=noninteractive apt-get install -y tachyon
 
-# Build and install Sage -- see https://github.com/sagemath/docker-images
-COPY scripts/ /usr/sage-install-scripts/
-RUN chmod -R a+rx /usr/sage-install-scripts/
+# I'm now pre-building sage for each version once and for all via
+#    https://github.com/sagemathinc/cocalc-compute-docker
+# NOTE: this copies from a multi-platform image, so it properly works
+# with both arm64 and x86_64!
+COPY --from=sagemathinc/sagemath-10.1-core /usr/local/sage /usr/local/sage
 
-RUN    adduser --quiet --shell /bin/bash --gecos "Sage user,101,," --disabled-password sage \
-    && chown -R sage:sage /home/sage/
+# Run Sage once. Otherwise, the first startup is very slow.
+RUN /usr/local/sage/sage < /dev/null
 
-# make source checkout target, then run the install script
-# see https://github.com/docker/docker/issues/9547 for the sync
-# TODO: It used to be that Sage couldn't be built as root, but now it can with
-# a special flag, but we still workaround this below.
-# Here -E inherits the environment from root, however it's important to
-# include -H to set HOME=/home/sage, otherwise DOT_SAGE will not be set
-# correctly and the build will fail!
-RUN    mkdir -p /usr/local/sage \
-    && chown -R sage:sage /usr/local/sage \
-    && sudo -H -E -u sage /usr/sage-install-scripts/install_sage.sh /usr/local/ 10.1 \
-    && sync
+# Add links for sage and sagemath
+RUN  ln -sf "/usr/local/sage/sage" /usr/bin/sage \
+  && ln -sf "/usr/local/sage/sage" /usr/bin/sagemath
 
-RUN /usr/sage-install-scripts/post_install_sage.sh /usr/local/ && rm -rf /tmp/* && sync
+# Put scripts to start gap, gp, maxima, ... in /usr/bin
+RUN sage --nodotsage -c "install_scripts('/usr/bin')"
+
+# Install additional Python packages into the sage Python distribution...
+# Install terminado for terminal support in the Jupyter Notebook
+RUN sage -pip install terminado
 
 # Install SageTex.
-# This used to be from /usr/local/sage/local/share/texmf/tex/latex/sagetex/
-# but it moved in sage >=9.5:
 RUN \
-     sudo -H -E -u sage sage -p sagetex \
+     cd /usr/local/sage/ \
+  && ./sage -p sagetex \
   && cp -rv /usr/local/sage/local/var/lib/sage/venv-python*/share/texmf/tex/latex/sagetex/ /usr/share/texmf/tex/latex/ \
   && texhash
-
-# Save nearly 5GB -- only do after installing all sage stuff!:
-RUN rm -rf /usr/local/sage/build/pkgs/sagelib/src/build
 
 # Try to install from pypi again to get better control over versions.
 # - ipywidgets<8 is because of https://github.com/sagemathinc/cocalc/issues/6128
@@ -192,18 +188,6 @@ RUN \
 # to make it available.
 # RUN sage --pip install pari_jupyter
 
-# Install LEAN proof assistant
-RUN \
-     export VERSION=3.4.1 \
-  && mkdir -p /opt/lean \
-  && cd /opt/lean \
-  && wget https://github.com/leanprover/lean/releases/download/v$VERSION/lean-$VERSION-linux.tar.gz \
-  && tar xf lean-$VERSION-linux.tar.gz \
-  && rm lean-$VERSION-linux.tar.gz \
-  && rm -f latest \
-  && ln -s lean-$VERSION-linux latest \
-  && ln -s /opt/lean/latest/bin/lean /usr/local/bin/lean
-
 # Install all aspell dictionaries, so that spell check will work in all languages.  This is
 # used by cocalc's spell checkers (for editors).  This takes about 80MB, which is well worth it.
 RUN \
@@ -211,13 +195,13 @@ RUN \
   && apt-get install -y aspell-*
 
 # Install Julia
-ARG JULIA=1.9.3
+ARG JULIA=1.9.4
 RUN cd /tmp \
  && export ARCH1=`uname -m | sed s/x86_64/x64/` \
  && export ARCH2=`uname -m` \
- && wget -q https://julialang-s3.julialang.org/bin/linux/${ARCH1}/${JULIA%.*}/julia-${JULIA}-linux-${ARCH2}.tar.gz \
- && tar xf julia-${JULIA}-linux-${ARCH2}.tar.gz -C /opt \
- && rm  -f julia-${JULIA}-linux-${ARCH2}.tar.gz \
+ && curl -fsSL https://julialang-s3.julialang.org/bin/linux/${ARCH1}/${JULIA%.*}/julia-${JULIA}-linux-${ARCH2}.tar.gz > julia.tar.gz \
+ && tar xf julia.tar.gz -C /opt \
+ && rm  -f julia.tar.gz \
  && mv /opt/julia-* /opt/julia \
  && ln -s /opt/julia/bin/julia /usr/local/bin
 
@@ -282,7 +266,7 @@ RUN \
 # VSCode code-server web application
 # See https://github.com/cdr/code-server/releases for VERSION.
 RUN \
-     export VERSION=4.8.3 \
+     export VERSION=4.19.0 \
   && export ARCH=`uname -m | sed s/aarch64/arm64/ | sed s/x86_64/amd64/` \
   && curl -fOL https://github.com/cdr/code-server/releases/download/v$VERSION/code-server_"$VERSION"_"$ARCH".deb \
   && dpkg -i code-server_"$VERSION"_"$ARCH".deb \
@@ -306,22 +290,13 @@ COPY kernels/ir/Rprofile.site /usr/local/sage/local/lib/R/etc/Rprofile.site
 # Build a UTF-8 locale, so that tmux works -- see https://unix.stackexchange.com/questions/277909/updated-my-arch-linux-server-and-now-i-get-tmux-need-utf-8-locale-lc-ctype-bu
 RUN echo "en_US.UTF-8 UTF-8" > /etc/locale.gen && locale-gen
 
-# Configuration
-
-COPY login.defs /etc/login.defs
-COPY login /etc/defaults/login
-COPY run.py /root/run.py
-COPY bashrc /root/.bashrc
-
-
 # CoCalc Jupyter widgets rely on these:
 RUN pip3 install --no-cache-dir ipyleaflet
 RUN sage -pip install --no-cache-dir ipyleaflet
 
 # Useful for nbgrader
 RUN pip3 install nose
-
-RUN sage -pip install node
+RUN sage -pip install nose
 
 # The Jupyter kernel that gets auto-installed with some other jupyter Ubuntu packages
 # doesn't have some nice options regarding inline matplotlib (and possibly others), so
@@ -339,54 +314,56 @@ RUN ln -sf /usr/bin/yapf3 /usr/bin/yapf
 RUN \
   pip3 install --upgrade --no-cache-dir  pandas plotly scipy  scikit-learn seaborn bokeh zmq k3d nose
 
-# Commit to checkout and build.
-ARG BRANCH=master
-ARG commit=HEAD
-
 # Install node v18.17.1
 # CRITICAL:  Do *NOT* upgrade nodejs to a newer version until the following is fixed !!!!!!
 #    https://github.com/sagemathinc/cocalc/issues/6963
-# Also, below I got 18.17.1-1nodesource1 by looking at the output of 'apt-cache showpkg nodejs|grep 18.17'
-RUN  apt-get update \
-  && apt-get remove -y nodejs libnode72 nodejs-doc \
-  && apt-get install -y ca-certificates curl gnupg \
-  && mkdir -p /etc/apt/keyrings \
-  && rm -f /etc/apt/keyrings/nodesource.gpg  \
-  && curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg \
-  && export NODE_MAJOR=18 \
-  && echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_$NODE_MAJOR.x nodistro main" | tee /etc/apt/sources.list.d/nodesource.list \
-  && apt-get update && apt-get install nodejs=18.17.1-1nodesource1 -y \
-  && apt-mark hold nodejs
-
+ARG NODE_VERSION=18.17.1
+# See https://github.com/nvm-sh/nvm#install--update-script for nvm versions
+ARG NVM_VERSION=0.39.5
+RUN  mkdir -p /usr/local/nvm \
+  && curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v$NVM_VERSION/install.sh | NVM_DIR=/usr/local/nvm bash \
+  && source /usr/local/nvm/nvm.sh \
+  && nvm install --no-progress $NODE_VERSION \
+  && rm -rf /usr/local/nvm/.git/ \
+  && npm install -g npm pnpm \
+  && echo "source /usr/local/nvm/nvm.sh" >> /etc/bash.bashrc
 
 # Kernel for javascript (the node.js Jupyter kernel)
 RUN \
-     npm install --unsafe-perm -g ijavascript \
+  source /usr/local/nvm/nvm.sh \
+  && npm install --unsafe-perm -g ijavascript \
   && ijsinstall --install=global
+
+# Commit to checkout and build.
+ARG BRANCH=master
+ARG COMMIT=HEAD
 
 # Pull latest source code for CoCalc and checkout requested commit (or HEAD),
 # install our Python libraries globally, then remove cocalc.  We only need it
 # for installing these Python libraries (TODO: move to pypi?).
 RUN \
      umask 022 && git clone --depth=1 https://github.com/sagemathinc/cocalc.git \
-  && cd /cocalc && git pull && git fetch -u origin $BRANCH:$BRANCH && git checkout ${commit:-HEAD}
+  && cd /cocalc && git pull && git fetch -u origin $BRANCH:$BRANCH && git checkout ${COMMIT:-HEAD}
 
 RUN umask 022 && pip3 install --upgrade /cocalc/src/smc_pyutil/
 
 # Install code into Sage
 RUN umask 022 && sage -pip install --upgrade /cocalc/src/smc_sagews/
 
-# Install pnpm package manager that we now use instead of npm
-RUN umask 022 \
-  && npm install -g pnpm
-
 # Build cocalc itself.
 RUN umask 022 \
   && cd /cocalc/src \
+  && source /usr/local/nvm/nvm.sh \
   && npm run make
 
-# And cleanup npm cache, which is several hundred megabytes after building cocalc above.
-RUN rm -rf /root/.npm
+# And cleanup pnpm cache
+RUN pnpm store prune
+
+# Configuration
+COPY login.defs /etc/login.defs
+COPY login /etc/defaults/login
+COPY run.py /root/run.py
+COPY bashrc /root/.bashrc
 
 CMD /root/run.py
 
@@ -394,3 +371,5 @@ ARG BUILD_DATE
 LABEL org.label-schema.build-date=$BUILD_DATE
 
 EXPOSE 22 80 443
+
+

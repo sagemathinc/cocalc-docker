@@ -33,4 +33,4 @@ npm install -g npm pnpm
 # without users having to do anything special.  If they setup nvm
 # though, at least our version is the default also, since we set it
 # above as the default.
-n=$(which node);n=${n%/bin/node}; chmod -R 755 $n/bin/*; sudo cp -r $n/{bin,lib,share} /usr/local
+n=$(which node);n=${n%/bin/node}; chmod -R 755 $n/bin/*; cp -r $n/{bin,lib,share} /usr/local

@@ -139,7 +139,7 @@ def root_ssh_keys():
 
 def start_hub():
     log("start_hub")
-    kill("cocalc-hub-server")
+    kill("cocalc-hub-server --mode=multi-user")
     # NOTE: there's automatic logging to files that rotate as they get bigger...
     if NOSSL:
         target = "hub-docker-prod-nossl"

@@ -6,9 +6,11 @@
 # various Jupyter kernels, including ones for Python, Octave, and JavaScript. The
 # image is built on top of the Ubuntu 22.04 operating system.
 
+ARG SAGEMATH_TAG=
+ARG ARCH=
+FROM sagemathinc/sagemath-core${ARCH}:${SAGEMATH_TAG} as sagemath
 
-ARG MYAPP_IMAGE=ubuntu:22.04
-FROM $MYAPP_IMAGE
+FROM ubuntu:22.04
 
 MAINTAINER William Stein <wstein@sagemath.com>
 
@@ -145,7 +147,7 @@ RUN \
 #    https://github.com/sagemathinc/cocalc-compute-docker
 # NOTE: this copies from a multi-platform image, so it properly works
 # with both arm64 and x86_64!
-COPY --from=sagemathinc/sagemath-10.1-core /usr/local/sage /usr/local/sage
+COPY --from=sagemath /usr/local/sage /usr/local/sage
 
 # Run Sage once. Otherwise, the first startup is very slow.
 RUN /usr/local/sage/sage < /dev/null

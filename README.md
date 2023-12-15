@@ -13,7 +13,7 @@ Docs: [https://doc.cocalc.com/docker\-image.html](https://doc.cocalc.com/docker-
 docker run --name=cocalc -d -v ~/cocalc:/projects -p 443:443 sagemathinc/cocalc-docker
 ```
 
-3. Wait a for the 7GB image to pull, decompress and the container to start, then visit https://localhost.
+3. Wait a for the 22GB image to pull, decompress and the container to start, then visit https://localhost.
 
 For other operating systems and way more details, see below.
 

@@ -4,16 +4,16 @@ GitHub: https://github.com/sagemathinc/cocalc-docker
 
 Docs: [https://doc.cocalc.com/docker\-image.html](https://doc.cocalc.com/docker-image.html)
 
-**Quickstart on a Linux server**
+**Quickstart on a Mac or Linux server with Docker installed**
 
 1. Make sure you have at least **25GB disk space free and Docker installed on your computer.**
-2. Run
+2. Run something like this, depending on your requirements:
 
 ```sh
 docker run --name=cocalc -d -v ~/cocalc:/projects -p 443:443 sagemathinc/cocalc-docker
 ```
 
-3. Wait a for the 22GB image to pull, decompress and the container to start, then visit https://localhost.
+3. Wait a for the 7GB image to pull, decompress and the container to start, then visit https://localhost.
 
 For other operating systems and way more details, see below.
 

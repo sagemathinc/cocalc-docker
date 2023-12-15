@@ -8,12 +8,14 @@ if [ $# -lt 1 ]; then
 fi
 
 export IMAGE="$1"
-export TAG="${2:-latest}"
+export ARCH_TAG="${2:-latest}"
+export TAG="${3:-$ARCH_TAG}"
 
 echo IMAGE=$IMAGE
+echo ARCH_TAG=$ARCH_TAG
 echo TAG=$TAG
 
-docker manifest create   $IMAGE:$TAG $IMAGE-x86_64:$TAG $IMAGE-arm64:$TAG --amend
-docker manifest annotate $IMAGE:$TAG $IMAGE-x86_64:$TAG --os linux --arch amd64
-docker manifest annotate $IMAGE:$TAG $IMAGE-arm64:$TAG  --os linux --arch arm64
+docker manifest create   $IMAGE:$TAG $IMAGE-x86_64:$ARCH_TAG $IMAGE-arm64:$ARCH_TAG --amend
+docker manifest annotate $IMAGE:$TAG $IMAGE-x86_64:$ARCH_TAG --os linux --arch amd64
+docker manifest annotate $IMAGE:$TAG $IMAGE-arm64:$ARCH_TAG  --os linux --arch arm64
 docker manifest push     $IMAGE:$TAG

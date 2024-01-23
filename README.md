@@ -1,8 +1,14 @@
 # CoCalc Docker image
 
+## What is CoCalc\-Docker? Run CoCalc for free for a small group on your own server or laptop!
+
+This is a free open\-source multiuser CoCalc server that you can _**very easily**_ install on your own computer or server using Docker. If you need something to install on a cluster of servers using Kubernetes, see [cocalc\-cloud](https://doc.cocalc.com/cocalc-cloud.html).
+
 GitHub: https://github.com/sagemathinc/cocalc-docker
 
 Docs: [https://doc.cocalc.com/docker\-image.html](https://doc.cocalc.com/docker-image.html)
+
+## Quickstart
 
 **Quickstart on a Mac or Linux server with Docker installed**
 
@@ -34,12 +40,6 @@ If the above doesn't work due to something else already using port 443 or you wa
 The default cocalc\-docker container of course has only a self\-signed ssl certificate. Browsers have cracked down more and more on allowing
 connections to such servers. Because cocalc\-docker is serving on localhost, you must explicitly tell your browser to allow the connection.
 Do a Google search for "chrome allow localhost https" to find out how; one result is [https://communicode.io/allow\-https\-localhost\-chrome/](https://communicode.io/allow-https-localhost-chrome/).
-
-## What is CoCalc\-Docker?
-
-**Run CoCalc for free for a small group on your own server or laptop!**
-
-This is a free open\-source multiuser CoCalc server that you can _**very easily**_ install on your own computer or server using Docker. If you need something to install on a cluster of servers using Kubernetes, see [cocalc\-cloud](https://doc.cocalc.com/cocalc-cloud.html).
 
 **LICENSE AND SUPPORT:**
 

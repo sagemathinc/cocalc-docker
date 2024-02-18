@@ -5,22 +5,22 @@ container](https://www.docker.com/resources/what-container/). If desired, `cocal
 instead connect to an externally-hosted PostgreSQL server by setting some environment variables and 
 a password file when creating the `cocalc-docker` container. In particular, if the environment 
 variable `PGHOST` is set, then `cocalc-docker` will not start an internal database and instead 
-relies on the connection to an external database.
+relies on configuration to connect to an external database.
 
 In this tutorial, we connect `cocalc-docker` to a PostgreSQL database (with optional SSL
 encryption) running on our local machine via Docker. 
 
 The following environment variables are used by `cocalc-docker` to configure this connection:
 
-| Variable Name                      | Description                            | Required | Default
-|------------------------------------|----------------------------------------|----------|-------------------------------
-| `PGHOST`                           | External database host/port.           | no       | `/projects/postgres/data/socket`
-| `PGUSER`                           | PostgreSQL user to connect as.         | no       | `smc`
-| `SMC_DB`                           | Database name                          | no       | `smc`
-| `SMC_DB_SSL_CA_FILE`               | Server certificate authority file path | no       |
-| `SMC_DB_SSL_CLIENT_CERT_FILE`      | Client certificate file path           | no       |
-| `SMC_DB_SSL_CLIENT_KEY_FILE`       | Client certificate key file path       | no       |
-| `SMC_DB_SSL_CLIENT_KEY_PASSPHRASE` | Client certificate key passphrase      | no       |
+| Variable Name                      | Description                            | Default                          |
+|------------------------------------|----------------------------------------|----------------------------------|
+| `PGHOST`                           | External database host/port.           | `/projects/postgres/data/socket` |
+| `PGUSER`                           | PostgreSQL user to connect as.         | `smc`                            |
+| `SMC_DB`                           | Database name                          | `smc`                            |
+| `SMC_DB_SSL_CA_FILE`               | Server certificate authority file path |                                  |
+| `SMC_DB_SSL_CLIENT_CERT_FILE`      | Client certificate file path           |                                  |
+| `SMC_DB_SSL_CLIENT_KEY_FILE`       | Client certificate key file path       |                                  |
+| `SMC_DB_SSL_CLIENT_KEY_PASSPHRASE` | Client certificate key passphrase      |                                  |
 
 > **Note**: The database password is mounted into the Docker container via the filesystem so that 
 > it is not explicitly passed via the command line. Inside the Docker container, this file resides
@@ -46,13 +46,13 @@ containers are allowed to connect:
 ### Generate SSL certificates*
 
 > **Note:** Generating self-signed SSL certificates is an optional part of this tutorial. Steps 
-> which must be followed in order to use a database connection secured via SSL are marked with an 
-> asterisk (*).
+> which must be followed to use an SSL-encrypted database connection are marked with an asterisk 
+> (*).
 
 First, we'll generate some SSL certificates with [OpenSSL](https://www.openssl.org/) in order 
 to secure our connection between CoCalc Docker and PostgreSQL. For the sake of completeness, we will 
 generate a server-side 
-[root certificate authority (CA)](https://en.wikipedia.org/wiki/Root_certificate) and use that to 
+[root certificate authority (CA)](https://en.wikipedia.org/wiki/Root_certificate) and use it to 
 sign a server certificate for PostgreSQL to present to CoCalc Docker. We'll also generate a client 
 certificate which CoCalc Docker will use to authenticate with our PostgreSQL server in what is 
 commonly known as 
@@ -79,7 +79,7 @@ First, we'll create a directory in which to store these files:
 Now we can generate the above files in order. First, we generate the requisite private 
 key/certificate pair to establish a root certificate authority. You'll be prompted for some 
 information to embed into the certificate authority. Go ahead and enter whatever information feels 
-right.
+right. Unless otherwise specified, this tutorial assumes that all default values are used.
 
 ```sh
 ~ $ openssl req -nodes -new -x509 -days 3650 -keyout ~/cocalc-extdb/ssl/ca.key -out ~/cocalc-extdb/ssl/ca.crt
@@ -184,8 +184,10 @@ To begin, we create a long-running Ubuntu Docker container which will serve Post
 
 ##### Copy SSL Certificates*
 
-In order to make it a bit easier to manage file permissions, we'll copy our certificates into our 
-container instead of using a [bind mount](https://docs.docker.com/storage/bind-mounts/):
+If you created SSL certificates earlier, we'll need to copy those files into our 
+container; here, we simply copy them in via `docker cp` instead of using a 
+[bind mount](https://docs.docker.com/storage/bind-mounts/) in order to ease file permissions 
+management:
 
 ```sh
 ~ $ docker cp ~/cocalc-extdb/ssl postgres:/var/lib/postgresql/14/main/
@@ -211,6 +213,8 @@ root@56103ab68131:/# echo "listen_addresses = '*'" >> /etc/postgresql/14/main/po
 Next, run the following command to configure password authentication:
 
 ```sh
+# Without SSL:
+
 root@56103ab68131:/# echo "host all all 0.0.0.0/0 md5" >> /etc/postgresql/14/main/pg_hba.conf
 
 # or, if SSL is to be used:
@@ -244,6 +248,8 @@ root@56103ab68131:/# exit
 
 ### Run CoCalc Docker
 
+#### Create Credentials File
+
 We are now ready to run CoCalc Docker with the database instance we created. We first need to create
 a password file from which `cocalc-docker` will read database credentials:
 
@@ -254,11 +260,18 @@ a password file from which `cocalc-docker` will read database credentials:
 
 > **Note:** For security reasons, permissions on the host directory `~/cocalc-extdb/secrets/` 
 > should be very restrictive (i.e., root only) so that normal users can't read the password.
+ 
+> **Note:** This step is technically optional if you are only interested in client certificate 
+> authentication. Since that use-case is somewhat rare however, we treat this as a required step.
+
+#### Start the Container
 
 Finally, we run `cocalc-docker` itself, attaching it to the Docker network we created earlier and
 mounting our secrets file into the running container:
 
 ```sh
+# Without SSL:
+
 ~ $ docker run -d --name=cocalc -p 5123:443 --network=cocalc-network \
     -e PGHOST=postgres \
     -e PGUSER=cocalc \
@@ -266,7 +279,7 @@ mounting our secrets file into the running container:
     -v ~/cocalc-extdb:/projects \
     sagemathinc/cocalc-docker
     
-# or, if using SSL:
+# or, if SSL is to be used:
 
 ~ $ docker run -d --name=cocalc -p 5123:443 --network=cocalc-network \
     -e PGHOST=postgres \
@@ -279,14 +292,13 @@ mounting our secrets file into the running container:
     sagemathinc/cocalc-docker
 ```
 
-Once everything is up and running, you should be able to view CoCalc in your browser at 
-https://localhost:5123.
-
 To view CoCalc logs, run:
 
 ```sh
 ~ $ docker logs cocalc
 ```
+Once everything is up and running, you should be able to view CoCalc in your browser at
+https://localhost:5123.
 
 ## Try it out
 
@@ -341,3 +353,5 @@ with the data stored in the `~/cocalc-extdb` we created:
 ~ $ docker network rm cocalc-network
 ~ $ rm -rf ~/cocalc-extdb/
 ```
+> **Warning:** You may need to prepend `sudo` to the last command, since Docker automatically 
+> creates some files there which are owned by the root user.

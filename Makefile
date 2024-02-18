@@ -6,8 +6,8 @@ COMMIT=$(shell git ls-remote -h https://github.com/sagemathinc/cocalc $(BRANCH) 
 # ARCH = '-x86_64' or '-arm64'
 ARCH=$(shell uname -m | sed 's/x86_64/-x86_64/;s/arm64/-arm64/;s/aarch64/-arm64/')
 
-# Update this for each new release -- totally arbitrary version number.
-TAG=1.1
+# Update this for each new cocalc-docker release; it's a totally arbitrary version number.
+TAG=1.5
 
 SAGEMATH_TAG=10.2
 cocalc-docker:
@@ -32,6 +32,7 @@ push-cocalc-docker:
 assemble-cocalc-docker:
 	#./multiarch.sh $(DOCKER_USER)/cocalc-docker $(TAG)
 	./multiarch.sh $(DOCKER_USER)/cocalc-docker $(TAG) latest
+	./multiarch.sh $(DOCKER_USER)/cocalc-docker $(TAG) $(TAG)
 
 cocalc-core:
 	cd src && docker build --build-arg commit=$(COMMIT) --build-arg BRANCH=$(BRANCH) --build-arg BUILD_DATE=$(BUILD_DATE) -t cocalc-core$(ARCH) . -f cocalc-core/Dockerfile

@@ -1,4 +1,9 @@
-# CoCalc Docker image
+# DEPRECATED
+
+**This is deprecated. Old instructions below.** 
+
+
+---
 
 ## What is CoCalc\-Docker? Run CoCalc for free for a small group on your own server or laptop!
 
